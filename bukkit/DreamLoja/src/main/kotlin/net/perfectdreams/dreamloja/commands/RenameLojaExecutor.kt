@@ -25,7 +25,8 @@ class RenameLojaExecutor(m: DreamLoja) : LojaExecutorBase(m) {
     override fun execute(context: CommandContext, args: CommandArguments) {
         val player = context.requirePlayer()
 
-        val newShopName = args[options.newShopName]
+        // the shop name must be lowercase
+        val newShopName = args[options.newShopName]?.lowercase()
 
         if (newShopName == null) {
             m.launchAsyncThread {
