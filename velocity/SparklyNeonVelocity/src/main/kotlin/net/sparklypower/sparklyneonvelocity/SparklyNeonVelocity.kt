@@ -219,7 +219,7 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
                 colorizedText = colorizedText.replace(Regex("\\b${it.username}\\b"), colors.mention(it.username))
             }
 
-            "$prefix $emote ${colors.nick.toLegacySection()}${player.username}${AdminChatCommand.adminChatColor.toLegacySection()}: $colorizedText".fromLegacySectionToTextComponent().apply {
+            "$prefix $emote ${colors.nick.toLegacySection()}${player.username}${AdminChatCommand.adminChatColor.toLegacySection()}: $colorizedText".fromLegacySectionToTextComponent().run {
                 hoverEvent(HoverEvent.showText("§3Servidor: §b${player.currentServer.getOrNull()?.server?.serverInfo?.name}".fromLegacySectionToTextComponent()))
             }
         } ?: "\ue252 §x§a§8§a§8§a§8Mensagem do console: §x§c§6§b§f§c§3$text".fromLegacySectionToTextComponent()

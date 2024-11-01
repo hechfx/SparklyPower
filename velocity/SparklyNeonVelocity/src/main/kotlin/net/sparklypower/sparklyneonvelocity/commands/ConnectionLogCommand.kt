@@ -78,7 +78,7 @@ class ConnectionLogCommand(val m: SparklyNeonVelocity) : SimpleCommand {
             }
 
             invocation.source().sendMessage(
-                "§8• ${connection.connectionStatus.color}${playerNameFromUniqueId} §7às §f$hour:$minute:$second $day/$month/$year".fromLegacySectionToTextComponent().apply {
+                "§8• ${connection.connectionStatus.color}${playerNameFromUniqueId} §7às §f$hour:$minute:$second $day/$month/$year".fromLegacySectionToTextComponent().run {
                     this.hoverEvent(HoverEvent.showText("§eStatus: §6${connection.connectionStatus.color}${connection.connectionStatus.fancyName}\n§eUUID: §6${connection.player}\n§7Tentou se conectar às $hour:$minute:$second $day/$month/$year".fromLegacySectionToTextComponent()))
                 }
             )
