@@ -5,10 +5,7 @@ import com.okkero.skedule.schedule
 import net.perfectdreams.dreamcash.utils.Cash
 import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.*
-import net.perfectdreams.dreamcore.utils.extensions.displaced
-import net.perfectdreams.dreamcore.utils.extensions.isWithinRegion
-import net.perfectdreams.dreamcore.utils.extensions.teleportToServerSpawn
-import net.perfectdreams.dreamcore.utils.extensions.teleportToServerSpawnWithEffects
+import net.perfectdreams.dreamcore.utils.extensions.*
 import net.perfectdreams.dreamcorrida.DreamCorrida
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -95,6 +92,19 @@ class PlayerListener(val m: DreamCorrida) : Listener {
 
         val currentPlayerCheckpoint = eventoCorrida.playerCheckpoints[e.player]
         val currentCheckpointIndex = corrida.checkpoints.indexOf(currentPlayerCheckpoint)
+
+        val regionsAtPlayer = e.player.location.worldGuardRegions
+        if (regionsAtPlayer.any { it.id.contains("corridadamage", true) }) {
+            val teleportTo = currentPlayerCheckpoint?.spawn?.toLocation() ?: corrida.spawn.toLocation()
+
+            e.player.fallDistance = 0.0f
+            e.player.fireTicks = 0
+            PlayerUtils.healAndFeed(e.player)
+
+            e.player.teleport(teleportTo)
+            e.player.sendMessage("§cVocê levou dano e voltou ao último checkpoint! Mas não desista, continue correndo!")
+            return
+        }
 
         for ((index, checkpoint) in corrida.checkpoints.withIndex()) {
             if (e.player.location.isWithinRegion(checkpoint.regionName)) {
