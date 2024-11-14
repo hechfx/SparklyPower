@@ -3,18 +3,24 @@ package net.perfectdreams.dreamcaixasecreta
 import club.minnced.discord.webhook.WebhookClient
 import com.xxmicloxx.NoteBlockAPI.model.Song
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TranslatableComponent
 import net.perfectdreams.commands.annotation.Subcommand
 import net.perfectdreams.commands.bukkit.SparklyCommand
 import net.perfectdreams.dreamcaixasecreta.listeners.BlockListener
 import net.perfectdreams.dreamcaixasecreta.listeners.CraftListener
 import net.perfectdreams.dreamcaixasecreta.utils.RandomItem
 import net.perfectdreams.dreamcore.utils.*
+import net.perfectdreams.dreamcore.utils.adventure.textComponent
 import net.perfectdreams.dreamcore.utils.extensions.meta
 import net.perfectdreams.dreamcore.utils.extensions.toItemStack
 import net.perfectdreams.dreamjetpack.DreamJetpack
+import org.bukkit.JukeboxSong
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemRarity
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.inventory.meta.EnchantmentStorageMeta
@@ -57,8 +63,8 @@ class DreamCaixaSecreta : KotlinPlugin() {
 			}
 		})
 
-
 		var chance = 0.1
+
 		prizes.add(
 			RandomItem(
 				ItemStack(
@@ -80,7 +86,36 @@ class DreamCaixaSecreta : KotlinPlugin() {
 				), chance
 			)
 		)
+
+		fun addMusicDisc(
+			musicDiscId: String,
+			customModelDataId: Int
+		) {
+			prizes.add(
+				RandomItem(
+					ItemStack(
+						Material.PAPER
+					).meta<ItemMeta> {
+						this.setRarity(ItemRarity.RARE)
+						this.itemName(Component.translatable("item.minecraft.music_disc_cat"))
+						this.setJukeboxPlayable(
+							this.jukeboxPlayable.apply {
+								this.songKey = NamespacedKey.fromString("sparklypower:$musicDiscId")!!
+							}
+						)
+						this.setCustomModelData(customModelDataId)
+					},
+					chance
+				)
+			)
+		}
+
+		addMusicDisc("club_classics", 215)
+		addMusicDisc("motteke_sailor_fuku", 216)
+		addMusicDisc("ta_facil_dizer_que_me_ama", 217)
+		
 		chance = 0.2
+
 		prizes.add(
 			RandomItem(
 				ItemStack(
