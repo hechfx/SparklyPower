@@ -1,7 +1,7 @@
-package net.perfectdreams.dreamequipcoolstuff.listeners
+package net.perfectdreams.dreamcustomitems.listeners
 
-import net.perfectdreams.dreamequipcoolstuff.DreamEquipCoolStuff
-import org.bukkit.Bukkit
+import net.perfectdreams.dreamcustomitems.DreamCustomItems
+import net.perfectdreams.dreamcustomitems.items.SparklyItemsRegistry
 import org.bukkit.Material
 import org.bukkit.entity.HumanEntity
 import org.bukkit.entity.Player
@@ -13,9 +13,8 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.InventoryView
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
 
-class InventoryListener(val m: DreamEquipCoolStuff) : Listener {
+class InventoryListener(val m: DreamCustomItems) : Listener {
     // FROM MASSIVEHAT
 
     // -------------------------------------------- //
@@ -40,16 +39,11 @@ class InventoryListener(val m: DreamEquipCoolStuff) : Listener {
 
         // ... and they are clicking their hat slot ...
         if (event.rawSlot != RAW_HAT_SLOT_ID) return
-        val cursor: ItemStack? = event.cursor
+        val cursor: ItemStack = event.cursor
 
-        if (cursor?.type != Material.PAPER)
-            return
+        val canEquip = SparklyItemsRegistry.canEquipAsHat(cursor)
 
-        val meta = cursor.itemMeta
-        if (!meta.hasCustomModelData())
-            return
-
-        if (meta.customModelData in 133..169 || meta.customModelData == 197 || meta.customModelData in 207..214) {
+        if (canEquip) {
             // ... then perform the switch.
             // We deny the normal result
             // NOTE: There is no need to cancel the event since that is just a proxy method for the line below.

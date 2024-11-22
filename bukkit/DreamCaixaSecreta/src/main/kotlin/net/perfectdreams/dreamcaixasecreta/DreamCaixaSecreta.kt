@@ -14,6 +14,8 @@ import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.adventure.textComponent
 import net.perfectdreams.dreamcore.utils.extensions.meta
 import net.perfectdreams.dreamcore.utils.extensions.toItemStack
+import net.perfectdreams.dreamcustomitems.items.SparklyItemsRegistry
+import net.perfectdreams.dreamcustomitems.utils.CustomItems
 import net.perfectdreams.dreamjetpack.DreamJetpack
 import org.bukkit.JukeboxSong
 import org.bukkit.Material
@@ -87,33 +89,55 @@ class DreamCaixaSecreta : KotlinPlugin() {
 			)
 		)
 
-		fun addMusicDisc(
-			musicDiscId: String,
-			customModelDataId: Int
-		) {
-			prizes.add(
-				RandomItem(
-					ItemStack(
-						Material.PAPER
-					).meta<ItemMeta> {
-						this.setRarity(ItemRarity.RARE)
-						this.itemName(Component.translatable("item.minecraft.music_disc_cat"))
-						this.setJukeboxPlayable(
-							this.jukeboxPlayable.apply {
-								this.songKey = NamespacedKey.fromString("sparklypower:$musicDiscId")!!
-							}
-						)
-						this.setCustomModelData(customModelDataId)
-					},
-					chance
-				)
+		prizes.add(
+			RandomItem(
+				CustomItems.MUSIC_DISC_CLUB_CLASSICS.clone(),
+				chance
 			)
-		}
+		)
 
-		addMusicDisc("club_classics", 215)
-		addMusicDisc("motteke_sailor_fuku", 216)
-		addMusicDisc("ta_facil_dizer_que_me_ama", 217)
-		
+		prizes.add(
+			RandomItem(
+				CustomItems.MUSIC_DISC_MOTTEKE_SAILOR_FUKU.clone(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				CustomItems.MUSIC_DISC_TA_FACIL_DIZER_QUE_ME_AMA.clone(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("moai_head").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("shikanoko_antlers").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("bunny_ears").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("deal_with_it_glasses").createItemStack(),
+				chance
+			)
+		)
+
 		chance = 0.2
 
 		prizes.add(

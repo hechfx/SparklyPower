@@ -12,7 +12,9 @@ import net.perfectdreams.dreamcore.utils.registerEvents
 import net.perfectdreams.dreamcore.utils.rename
 import net.perfectdreams.dreamcustomitems.commands.declarations.CustomItemRecipesCommand
 import net.perfectdreams.dreamcustomitems.commands.declarations.DreamCustomItemsCommand
+import net.perfectdreams.dreamcustomitems.commands.declarations.HatCommand
 import net.perfectdreams.dreamcustomitems.items.Microwave
+import net.perfectdreams.dreamcustomitems.items.SparklyItemsRegistry
 import net.perfectdreams.dreamcustomitems.items.SuperFurnace
 import net.perfectdreams.dreamcustomitems.listeners.*
 import net.perfectdreams.dreamcustomitems.utils.*
@@ -57,6 +59,8 @@ class DreamCustomItems : KotlinPlugin(), Listener {
 
 	override fun softEnable() {
 		super.softEnable()
+
+		SparklyItemsRegistry.reload(this)
 
 		// This is here just to throw an error if CustomBlocks fail to initialize
 		logger.info("There are ${CustomBlocks.allCustomBlocks.size} custom blocks!")
@@ -122,9 +126,11 @@ class DreamCustomItems : KotlinPlugin(), Listener {
 		registerEvents(ConvertLegacyItemsToCustomModelDataListener(this))
 		registerEvents(ChimarraoListener())
 		registerEvents(CustomBlocksListener(this))
+		registerEvents(InventoryListener(this))
 
-		registerCommand(DreamCustomItemsCommand)
+		registerCommand(DreamCustomItemsCommand(this))
 		registerCommand(CustomItemRecipesCommand(this))
+		registerCommand(HatCommand(this))
 
 		customRecipes.add(
 			CustomCraftingRecipe(

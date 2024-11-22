@@ -117,7 +117,6 @@ class DreamMini : KotlinPlugin(), Listener {
 		registerCommand(TopCommand(this))
 		registerCommand(SpeedCommand(this))
 		registerCommand(FlyCommand(this))
-		registerCommand(HatCommand(this))
 		registerCommand(HealCommand(this))
 		registerCommand(FeedCommand(this))
 		registerCommand(SkullCommand(this))

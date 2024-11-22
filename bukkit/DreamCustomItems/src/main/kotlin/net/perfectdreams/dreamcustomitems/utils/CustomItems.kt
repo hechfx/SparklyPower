@@ -1,15 +1,18 @@
 package net.perfectdreams.dreamcustomitems.utils
 
 import com.destroystokyo.paper.profile.ProfileProperty
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.perfectdreams.dreamcore.utils.SparklyNamespacedKey
 import net.perfectdreams.dreamcore.utils.adventure.displayNameWithoutDecorations
+import net.perfectdreams.dreamcore.utils.adventure.lore
 import net.perfectdreams.dreamcore.utils.extensions.meta
 import net.perfectdreams.dreamcore.utils.set
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemRarity
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.inventory.meta.SkullMeta
@@ -271,4 +274,88 @@ object CustomItems {
             setCustomModelData(3)
             setDisplayName("§fChimarrão")
         }
+
+    /* val MOAI_HEAD = ItemStack(Material.PAPER)
+        .meta<ItemMeta> {
+            setCustomModelData(218)
+            displayNameWithoutDecorations {
+                content("Moai")
+            }
+
+            lore {
+                this.textWithoutDecorations {
+                    color(NamedTextColor.GRAY)
+                    content("De onde será que tiraram essas cabeças?")
+                }
+            }
+        }
+
+    val SHIKANOKO_ANTLERS = ItemStack(Material.PAPER)
+        .meta<ItemMeta> {
+            setCustomModelData(219)
+            displayNameWithoutDecorations {
+                content("Chifres de Cervo")
+            }
+
+            lore {
+                this.textWithoutDecorations {
+                    color(NamedTextColor.GRAY)
+                    content("Nenhum cervo, nem a própria Nokotan, foram machucados para fazer estes chifres.")
+                }
+            }
+        }
+
+    val BUNNY_EARS = ItemStack(Material.PAPER)
+        .meta<ItemMeta> {
+            setCustomModelData(220)
+            displayNameWithoutDecorations {
+                content("Orelhas de Coelho")
+                content("Nenhum coelho foi machucuado para fazer estas orelhas.")
+            }
+
+            lore {
+                this.textWithoutDecorations {
+                    color(NamedTextColor.GRAY)
+                    content("Nenhum coelho foi machucuado para fazer estas orelhas.")
+                }
+            }
+        }
+
+    val DEAL_WITH_IT_GLASSES = ItemStack(Material.PAPER)
+        .meta<ItemMeta> {
+            setCustomModelData(221)
+            displayNameWithoutDecorations {
+                content("Óculos")
+            }
+
+            lore {
+                this.textWithoutDecorations {
+                    color(NamedTextColor.GRAY)
+                    content("Deal With It!")
+                }
+            }
+        } */
+
+    val MUSIC_DISC_CLUB_CLASSICS = createMusicDisc("club_classics", 215)
+    val MUSIC_DISC_MOTTEKE_SAILOR_FUKU = createMusicDisc("motteke_sailor_fuku", 216)
+    val MUSIC_DISC_TA_FACIL_DIZER_QUE_ME_AMA = createMusicDisc("ta_facil_dizer_que_me_ama", 217)
+
+    fun createMusicDisc(
+        musicDiscId: String,
+        customModelDataId: Int
+    ): ItemStack {
+        return ItemStack(
+            Material.PAPER
+        ).meta<ItemMeta> {
+            this.setRarity(ItemRarity.RARE)
+            this.itemName(Component.translatable("item.minecraft.music_disc_cat"))
+            this.setJukeboxPlayable(
+                this.jukeboxPlayable.apply {
+                    this.songKey = NamespacedKey.fromString("sparklypower:$musicDiscId")!!
+                }
+            )
+            this.setCustomModelData(customModelDataId)
+        }
+    }
+
 }
