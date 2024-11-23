@@ -65,7 +65,23 @@ class DreamCaixaSecreta : KotlinPlugin() {
 			}
 		})
 
-		var chance = 0.1
+		var chance = 0.05
+		for (enchantment in Enchantment.values()) {
+			for (level in enchantment.startLevel..enchantment.maxLevel) {
+				prizes.add(
+					RandomItem(
+						ItemStack(
+							Material.ENCHANTED_BOOK,
+						).meta<EnchantmentStorageMeta> {
+							this.addStoredEnchant(enchantment, level, false)
+						},
+						chance
+					)
+				)
+			}
+		}
+
+		chance = 0.1
 
 		prizes.add(
 			RandomItem(
@@ -336,21 +352,6 @@ class DreamCaixaSecreta : KotlinPlugin() {
 			)
 		)
 
-		for (enchantment in Enchantment.values()) {
-			for (level in enchantment.startLevel..enchantment.maxLevel) {
-				prizes.add(
-					RandomItem(
-						ItemStack(
-							Material.ENCHANTED_BOOK,
-						).meta<EnchantmentStorageMeta> {
-							this.addStoredEnchant(enchantment, level, false)
-						},
-						chance
-					)
-				)
-			}
-		}
-
 		for (material in Material.values().filter { !it.isLegacy && it.isItem }) {
 			if (material.name.startsWith("MUSIC_DISC_")) {
 				prizes.add(
@@ -358,7 +359,8 @@ class DreamCaixaSecreta : KotlinPlugin() {
 						ItemStack(
 							material,
 							1
-						), chance
+						),
+						0.1
 					)
 				)
 			}
@@ -446,16 +448,6 @@ class DreamCaixaSecreta : KotlinPlugin() {
 						ItemStack(
 							material,
 							2
-						), chance
-					)
-				)
-			}
-
-			if (material.name.endsWith("ENCHANTED_BOOK")) {
-				prizes.add(
-					RandomItem(
-						ItemStack(
-							material,
 						), chance
 					)
 				)
