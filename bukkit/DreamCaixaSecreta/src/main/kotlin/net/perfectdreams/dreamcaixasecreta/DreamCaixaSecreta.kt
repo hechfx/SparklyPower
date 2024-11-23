@@ -91,21 +91,21 @@ class DreamCaixaSecreta : KotlinPlugin() {
 
 		prizes.add(
 			RandomItem(
-				CustomItems.MUSIC_DISC_CLUB_CLASSICS.clone(),
+				SparklyItemsRegistry.getItemById("music_disc_club_classics").createItemStack(),
 				chance
 			)
 		)
 
 		prizes.add(
 			RandomItem(
-				CustomItems.MUSIC_DISC_MOTTEKE_SAILOR_FUKU.clone(),
+				SparklyItemsRegistry.getItemById("music_disc_motteke_sailor_fuku").createItemStack(),
 				chance
 			)
 		)
 
 		prizes.add(
 			RandomItem(
-				CustomItems.MUSIC_DISC_TA_FACIL_DIZER_QUE_ME_AMA.clone(),
+				SparklyItemsRegistry.getItemById("music_disc_ta_facil_dizer_que_me_ama").createItemStack(),
 				chance
 			)
 		)
@@ -134,6 +134,13 @@ class DreamCaixaSecreta : KotlinPlugin() {
 		prizes.add(
 			RandomItem(
 				SparklyItemsRegistry.getItemById("deal_with_it_glasses").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("shark_blahaj").createItemStack(),
 				chance
 			)
 		)
