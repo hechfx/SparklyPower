@@ -71,28 +71,40 @@ class BlockCraftListener(val m: DreamCustomItems) : Listener {
             }
 
             // Get if this recipe is a custom recipe
-			val customRecipe = m.customRecipes.asSequence().filterIsInstance<CustomCraftingRecipe>()
+            val customRecipe = m.customRecipes.asSequence().filterIsInstance<CustomCraftingRecipe>()
                 .firstOrNull { (it.recipe as? Keyed)?.key?.key == recipe.key.key }
 
             // It is a custom recipe, so now we need if our recipe matches
-            if (customRecipe != null && customRecipe.checkRemappedItems) {
-                val valid = e.craftingMatrix
-                    .filterNotNull()
-                    .all {
-                        val remappedItem = customRecipe.itemRemapper.invoke(it)
+            if (customRecipe != null) {
+                if (customRecipe.checkRemappedItems) {
+                    val valid = e.craftingMatrix
+                        .filterNotNull()
+                        .all {
+                            val remappedItem = customRecipe.itemRemapper.invoke(it)
 
-                        var itemMetaCheck = remappedItem.hasItemMeta() == it.hasItemMeta()
-                        if (remappedItem.hasItemMeta() && it.hasItemMeta()) {
-                            itemMetaCheck = remappedItem.itemMeta.hasCustomModelData() == it.itemMeta.hasCustomModelData()
-                            if (remappedItem.itemMeta.hasCustomModelData() && it.itemMeta.hasCustomModelData()) {
-                                itemMetaCheck = remappedItem.itemMeta.customModelData == it.itemMeta.customModelData
+                            var itemMetaCheck = remappedItem.hasItemMeta() == it.hasItemMeta()
+                            if (remappedItem.hasItemMeta() && it.hasItemMeta()) {
+                                itemMetaCheck = remappedItem.itemMeta.hasCustomModelData() == it.itemMeta.hasCustomModelData()
+                                if (remappedItem.itemMeta.hasCustomModelData() && it.itemMeta.hasCustomModelData()) {
+                                    itemMetaCheck = remappedItem.itemMeta.customModelData == it.itemMeta.customModelData
+                                }
                             }
+                            remappedItem.type == it.type && itemMetaCheck
                         }
-                        remappedItem.type == it.type && itemMetaCheck
+
+                    // Any of our remapped items are not valid, so we will cancel it
+                    if (!valid)
+                        e.isCancelled = true
+                }
+            } else {
+                // Don't allow using custom items in vanilla recipes
+                val usesCustomItems = e.craftingMatrix
+                    .filterNotNull()
+                    .any {
+                        it.hasItemMeta() && it.itemMeta.hasCustomModelData()
                     }
 
-                // Any of our remapped items are not valid, so we will cancel it
-                if (!valid)
+                if (usesCustomItems)
                     e.isCancelled = true
             }
         }
