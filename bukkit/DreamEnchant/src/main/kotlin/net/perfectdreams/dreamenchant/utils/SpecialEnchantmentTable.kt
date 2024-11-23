@@ -21,11 +21,23 @@ abstract class SpecialEnchantmentTable {
     val rubiesToCreditsAmount = 1
     val pesadelosToCreditsAmount = 15L
 
+    /**
+     * List of enchantments that are not available in the special enchantment table
+     */
+    private val UNAVAILABLE_ENCHANTMENTS = setOf(
+        Enchantment.BINDING_CURSE,
+        Enchantment.VANISHING_CURSE,
+    )
+
     abstract val creditsAmount: Int
 
     abstract fun openEnchantmentInventoryOrCreditsScreen(player: Player, clickedBlock: Block, page: Int)
 
     abstract fun hasEnoughCreditsToPurchaseEnchantment(player: Player, block: Block): Boolean
+
+    private fun getEnchantmentsCompatibleWithItem(item: ItemStack): List<Enchantment> {
+        return Enchantment.values().filter { it !in UNAVAILABLE_ENCHANTMENTS && it.canEnchantItem(item) }
+    }
 
     fun validateIfItemCanBeEnchanted(player: Player, item: ItemStack): Boolean {
         if (item.type == Material.AIR) {
@@ -33,8 +45,7 @@ abstract class SpecialEnchantmentTable {
             return false
         }
 
-        val enchants = Enchantment.values().filter { it.canEnchantItem(item) }
-            .sortedByDescending { it.maxLevel }
+        val enchants = getEnchantmentsCompatibleWithItem(item)
 
         if (enchants.isEmpty()) {
             player.sendMessage("§cO item que está na sua mão não pode ser encantado!")
@@ -54,9 +65,7 @@ abstract class SpecialEnchantmentTable {
         openEnchantmentInventoryBlock: (Player, Block, Int, Int) -> Unit,
         openEnchantmentCreditsInventoryBlock: (Player, Block, Int) -> Unit
     ): DreamMenu {
-        val enchants = Enchantment.values()
-            .filter { it.canEnchantItem(heldItem) }
-            .sortedByDescending { it.maxLevel }
+        val enchants = getEnchantmentsCompatibleWithItem(heldItem).sortedByDescending { it.maxLevel }
 
         return createMenu(54, "§fꈉ\uE253") {
             slot(8) {
@@ -138,7 +147,7 @@ abstract class SpecialEnchantmentTable {
                     val ptEnchantment = TranslationAPI.getTranslationString("pt_br", localeKey)
                     val usEnchantment = TranslationAPI.getTranslationString("en_us", localeKey)
 
-                    val multiplier = m.getLevelMultiplierForPlayer(player)
+                    val enchantmentExperiencePrice = m.getRequiredEnchantmentExperienceForPlayer(player, enchantment, level)
 
                     slot((index * 9) + (level - 1)) {
                         item = ItemStack(
@@ -156,12 +165,12 @@ abstract class SpecialEnchantmentTable {
                             }
                         )
                             .rename(
-                                "§a$usEnchantment§8/§a$ptEnchantment §7${level.toRomanNumeral()} §8[§e§l${level * multiplier} §a§lníveis§8]"
+                                "§a$usEnchantment§8/§a$ptEnchantment §7${level.toRomanNumeral()} §8[§e§l${enchantmentExperiencePrice.requiredLevel} §a§lníveis§8]"
                             )
                             .apply {
-                                if (multiplier != 7) {
+                                if (enchantmentExperiencePrice.requiredLevelWithoutDiscounts != enchantmentExperiencePrice.requiredLevel) {
                                     this.lore(
-                                        "§aPreço normal: §e§6§l${level * 7} níveis§e",
+                                        "§aPreço normal: §e§6§l${enchantmentExperiencePrice.requiredLevelWithoutDiscounts} níveis§e",
                                         "§7",
                                         "§7VIPs ganham desconto em encantamentos!"
                                     )
@@ -191,7 +200,7 @@ abstract class SpecialEnchantmentTable {
                                 return@onClick
                             }
 
-                            val levelCost = level * m.getLevelMultiplierForPlayer(player)
+                            val levelCost = m.getRequiredEnchantmentExperienceForPlayer(player, enchantment, level).requiredLevel
 
                             if (levelCost > player.level) {
                                 player.sendMessage("§cVocê não possui experiência suficiente para encantar este item!")

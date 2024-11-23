@@ -96,12 +96,36 @@ class DreamEnchant : KotlinPlugin() {
 		)
 	}
 
-	fun getLevelMultiplierForPlayer(player: Player): Int {
-		return when {
+	fun getRequiredEnchantmentExperienceForPlayer(
+		player: Player,
+		enchantment: Enchantment,
+		enchantmentLevel: Int
+	): EnchantmentExperiencePrice {
+		val defaultMultiplier = when {
 			player.hasPermission("dreamenchant.vip++") -> 4
 			player.hasPermission("dreamenchant.vip+") -> 5
 			player.hasPermission("dreamenchant.vip") -> 6
 			else -> 7
 		}
+
+		var additionalMultipiler = 0
+
+		// Make mending more expensive because it is a VERY useful enchantment
+		if (enchantment == Enchantment.MENDING)
+			additionalMultipiler += 43
+
+		return EnchantmentExperiencePrice(
+			enchantment,
+			enchantmentLevel,
+			enchantmentLevel * (defaultMultiplier + additionalMultipiler),
+			enchantmentLevel * (7 + additionalMultipiler)
+		)
 	}
+
+	data class EnchantmentExperiencePrice(
+		val enchantment: Enchantment,
+		val enchantmentLevel: Int,
+		val requiredLevel: Int,
+		val requiredLevelWithoutDiscounts: Int
+	)
 }
