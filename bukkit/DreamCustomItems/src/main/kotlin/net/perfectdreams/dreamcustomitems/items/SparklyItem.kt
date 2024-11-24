@@ -1,11 +1,16 @@
 package net.perfectdreams.dreamcustomitems.items
 
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.perfectdreams.dreamcore.utils.adventure.appendTextComponent
 import net.perfectdreams.dreamcore.utils.adventure.displayNameWithoutDecorations
 import net.perfectdreams.dreamcore.utils.adventure.lore
+import net.perfectdreams.dreamcore.utils.adventure.textComponent
 import net.perfectdreams.dreamcore.utils.extensions.meta
 import net.perfectdreams.dreamcore.utils.set
+import net.perfectdreams.dreamcustomitems.paintings.SparklyPaintingsRegistry
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
@@ -41,13 +46,55 @@ class SparklyItem(val data: SparklyItemData) {
                     }
                 }
 
+                val loreLineSections = mutableListOf<List<Component>>()
+
+                val rawHangablePainting = getAttributeCheckParents(SparklyItemData::hangablePainting)
+                if (rawHangablePainting != null) {
+                    val paintingVariant = SparklyPaintingsRegistry.getPaintingVariantById(rawHangablePainting.paintingKey) ?:  error("Painting Variant \"${rawHangablePainting.paintingKey}\" does not exist! Bug?")
+
+                    loreLineSections.add(
+                        listOf(
+                            textComponent {
+                                color(NamedTextColor.DARK_GRAY)
+                                appendTextComponent {
+                                    color(NamedTextColor.AQUA)
+                                    content(rawHangablePainting.artist)
+                                }
+
+                                appendTextComponent {
+                                    content(" - ")
+                                }
+
+                                appendTextComponent {
+                                    color(NamedTextColor.AQUA)
+                                    content(rawHangablePainting.title)
+                                }
+                            },
+                            textComponent {
+                                color(NamedTextColor.GOLD)
+                                content("${paintingVariant.width}x${paintingVariant.height}")
+                            }
+                        )
+                    )
+                }
+
                 val rawLore = getAttributeCheckParents(SparklyItemData::lore)
                 if (rawLore != null) {
+                    loreLineSections.add(rawLore.map { MiniMessage.miniMessage().deserialize(it) })
+                }
+
+                if (loreLineSections.isNotEmpty()) {
                     lore {
-                        for (line in rawLore.map { MiniMessage.miniMessage().deserialize(it) }) {
-                            this.textWithoutDecorations {
-                                color(NamedTextColor.GRAY)
-                                append(line)
+                        for ((index, group) in loreLineSections.withIndex()) {
+                            if (index != 0) {
+                                this.emptyLine()
+                            }
+
+                            for (line in group) {
+                                this.textWithoutDecorations {
+                                    color(NamedTextColor.GRAY)
+                                    append(line)
+                                }
                             }
                         }
                     }

@@ -128,6 +128,7 @@ class DreamCustomItems : KotlinPlugin(), Listener {
 		registerEvents(CustomBlocksListener(this))
 		registerEvents(InventoryListener(this))
 		registerEvents(InteractionListener())
+		registerEvents(CustomPaintingListener())
 
 		registerCommand(DreamCustomItemsCommand(this))
 		registerCommand(CustomItemRecipesCommand(this))

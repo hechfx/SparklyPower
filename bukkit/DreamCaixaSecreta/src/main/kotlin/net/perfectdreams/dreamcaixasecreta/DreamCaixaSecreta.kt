@@ -128,6 +128,55 @@ class DreamCaixaSecreta : KotlinPlugin() {
 
 		prizes.add(
 			RandomItem(
+				SparklyItemsRegistry.getItemById("music_disc_two_months_off").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("music_disc_live_and_learn").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("music_disc_take_my_time").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("music_disc_bad_apple").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("music_disc_chala_head_chala").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("music_disc_hino_nacional_brasil").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("music_disc_fallen_kingdom").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
 				SparklyItemsRegistry.getItemById("moai_head").createItemStack(),
 				chance
 			)
@@ -157,6 +206,69 @@ class DreamCaixaSecreta : KotlinPlugin() {
 		prizes.add(
 			RandomItem(
 				SparklyItemsRegistry.getItemById("shark_blahaj").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_pandastica_hora_de_arrepiar").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_meu_deus_um_anjo").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_smart_dachshund").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_bliss_kawaii").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_lori_lick").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_pantufa_lick").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_gabi_lick").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_power_lick").createItemStack(),
+				chance
+			)
+		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("painting_gessy_lick").createItemStack(),
 				chance
 			)
 		)

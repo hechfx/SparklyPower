@@ -17,7 +17,8 @@ data class SparklyItemData(
     val lore: List<String>? = null,
     val equippable: Equippable? = null,
     val jukeboxPlayable: JukeboxPlayable? = null,
-    val itemAppearanceShiftChanger: ItemAppearanceShiftChanger? = null
+    val itemAppearanceShiftChanger: ItemAppearanceShiftChanger? = null,
+    val hangablePainting: HangablePainting? = null
 ) {
     @Serializable
     data class Equippable(
@@ -33,5 +34,12 @@ data class SparklyItemData(
     data class ItemAppearanceShiftChanger(
         val modelIds: List<Int>,
         val soundKey: String?
+    )
+
+    @Serializable
+    data class HangablePainting(
+        val artist: String,
+        val title: String,
+        val paintingKey: String
     )
 }
