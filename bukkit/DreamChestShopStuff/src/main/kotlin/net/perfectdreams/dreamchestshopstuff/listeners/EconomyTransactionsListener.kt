@@ -1,6 +1,7 @@
 package net.perfectdreams.dreamchestshopstuff.listeners
 
 import com.Acrobot.ChestShop.Events.TransactionEvent
+import com.Acrobot.ChestShop.Signs.ChestShopSign
 import net.perfectdreams.dreamchestshopstuff.DreamChestShopStuff
 import net.perfectdreams.dreamcore.utils.TransactionContext
 import net.perfectdreams.dreamcore.utils.TransactionType
@@ -19,7 +20,7 @@ class EconomyTransactionsListener(private val plugin: DreamChestShopStuff) : Lis
 
         val isBuying = event.transactionType == TransactionEvent.TransactionType.BUY
 
-        val owner = event.ownerAccount.name.let { if (it == "SparklyShop") null else Bukkit.getOfflinePlayer(it).uniqueId }
+        val owner = event.ownerAccount.name.let { if (it == "SparklyShop") null else event.ownerAccount.uuid }
         val client = event.client.uniqueId
 
         TransactionContext(
