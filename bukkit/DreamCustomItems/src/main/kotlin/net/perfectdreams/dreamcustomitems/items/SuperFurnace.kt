@@ -71,7 +71,7 @@ class SuperFurnace(val m: DreamCustomItems, val location: Location) {
 
     // MCMMO SMELTING XP
     fun getResourceXp(smelting: ItemStack): Int {
-        return if (mcMMO.getModManager().isCustomOre(smelting.type)) mcMMO.getModManager().getBlock(smelting.type).smeltingXpGain else ExperienceConfig.getInstance().getXp(PrimarySkillType.SMELTING, smelting.type)
+        return ExperienceConfig.getInstance().getXp(PrimarySkillType.SMELTING, smelting.type)
     }
 
     // MCMMO DOUBLE SMELTING

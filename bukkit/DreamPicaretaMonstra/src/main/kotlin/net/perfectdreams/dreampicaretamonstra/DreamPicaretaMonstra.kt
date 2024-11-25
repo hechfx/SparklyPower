@@ -1,12 +1,12 @@
 package net.perfectdreams.dreampicaretamonstra
 
+import com.gmail.nossr50.config.experience.ExperienceConfig
 import com.gmail.nossr50.datatypes.experience.XPGainReason
 import com.gmail.nossr50.datatypes.player.McMMOPlayer
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType
 import com.gmail.nossr50.datatypes.skills.SubSkillType
 import com.gmail.nossr50.mcMMO
 import com.gmail.nossr50.skills.excavation.ExcavationManager
-import com.gmail.nossr50.skills.mining.Mining
 import com.gmail.nossr50.skills.mining.MiningManager
 import com.gmail.nossr50.util.BlockUtils
 import com.gmail.nossr50.util.Permissions
@@ -133,7 +133,9 @@ class DreamPicaretaMonstra : KotlinPlugin(), Listener {
 		blockState: BlockState,
 		heldItemHasSilkTouch: Boolean
 	) {
-		miningManager.applyXpGain(Mining.getBlockXp(blockState).toFloat(), XPGainReason.PVE)
+		val mcmmoBlockXP = ExperienceConfig.getInstance().getXp(PrimarySkillType.MINING, blockState.type)
+
+		miningManager.applyXpGain(mcmmoBlockXP.toFloat(), XPGainReason.PVE)
 		if (Permissions.isSubSkillEnabled(player, SubSkillType.MINING_DOUBLE_DROPS)) {
 			if (mmoPlayer.getAbilityMode(mcMMO.p.skillTools.getSuperAbility(skillType))) {
 				SkillUtils.handleDurabilityChange(
