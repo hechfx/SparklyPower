@@ -7,9 +7,15 @@ import net.perfectdreams.dreamresourcepack.DreamResourcePack
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.event.player.PlayerResourcePackStatusEvent
 
 class MoveListener(val m: DreamResourcePack) : Listener {
+    @EventHandler
+    fun onQuit(e: PlayerQuitEvent) {
+        m.sentToPlayer.remove(e.player)
+    }
+
     @EventHandler
     fun onMove(e: PlayerMoveEvent) {
         if (!e.displaced)
