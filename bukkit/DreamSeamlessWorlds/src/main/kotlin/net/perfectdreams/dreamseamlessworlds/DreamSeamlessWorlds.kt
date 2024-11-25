@@ -4,11 +4,9 @@ import com.charleskorn.kaml.Yaml
 import com.destroystokyo.paper.event.server.ServerTickEndEvent
 import kotlinx.coroutines.future.await
 import kotlinx.serialization.decodeFromString
-import net.minecraft.core.Holder
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket
 import net.minecraft.world.level.ChunkPos
-import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.biome.Biomes
 import net.minecraft.world.level.chunk.LevelChunk
 import net.minecraft.world.level.chunk.status.ChunkStatus
@@ -21,9 +19,8 @@ import org.bukkit.GameRule
 import org.bukkit.Location
 import org.bukkit.WorldBorder
 import org.bukkit.craftbukkit.CraftChunk
+import org.bukkit.craftbukkit.CraftRegistry
 import org.bukkit.craftbukkit.CraftWorld
-import org.bukkit.craftbukkit.entity.CraftPlayer
-import org.bukkit.craftbukkit.util.CraftLocation
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -308,9 +305,7 @@ class DreamSeamlessWorlds : KotlinPlugin(), Listener {
 					// Send empty chunk instead
 					/* val plains: Holder<Biome> = nmsWorld.registryAccess().registryOrThrow<Biome>(Registries.BIOME)
 						.getHolderOrThrow(Biomes.PLAINS) */
-					val plains: Holder<Biome> = nmsWorld.registryAccess().get(Registries.BIOME)
-						.get()
-						.value()
+					val plains = CraftRegistry.getMinecraftRegistry(Registries.BIOME)
 						.get(Biomes.PLAINS)
 						.get()
 
