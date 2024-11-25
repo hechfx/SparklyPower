@@ -363,7 +363,7 @@ class DreamBusca : KotlinPlugin(), Listener {
 						}
 
 						val randomBlockInChunk = chunk.getBlock(0, 0, 0)
-						if (randomBlockInChunk.biome == Biome.OCEAN || randomBlockInChunk.biome.name.endsWith("_OCEAN")) {
+						if (randomBlockInChunk.biome == Biome.OCEAN || randomBlockInChunk.biome.name().endsWith("_OCEAN")) {
 							logger.info { "Skipping Chunk ($x, $z) because it is an ocean!" }
 							delayTicks(1L)
 							chunksChecked++

@@ -306,8 +306,13 @@ class DreamSeamlessWorlds : KotlinPlugin(), Listener {
 					}
 				} else {
 					// Send empty chunk instead
-					val plains: Holder<Biome> = nmsWorld.registryAccess().registryOrThrow<Biome>(Registries.BIOME)
-						.getHolderOrThrow(Biomes.PLAINS)
+					/* val plains: Holder<Biome> = nmsWorld.registryAccess().registryOrThrow<Biome>(Registries.BIOME)
+						.getHolderOrThrow(Biomes.PLAINS) */
+					val plains: Holder<Biome> = nmsWorld.registryAccess().get(Registries.BIOME)
+						.get()
+						.value()
+						.get(Biomes.PLAINS)
+						.get()
 
 					event.packet = ClientboundLevelChunkWithLightPacket(
 						net.minecraft.world.level.chunk.EmptyLevelChunk(

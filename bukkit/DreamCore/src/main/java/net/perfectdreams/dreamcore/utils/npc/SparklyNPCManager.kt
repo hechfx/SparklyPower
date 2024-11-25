@@ -3,6 +3,7 @@ package net.perfectdreams.dreamcore.utils.npc
 import net.kyori.adventure.text.Component
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket
+import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EntityType
 import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.SparklyNamespacedBooleanKey
@@ -135,7 +136,7 @@ class SparklyNPCManager(val m: DreamCore) {
         // We need to use NMS because we need to know the UUID of the entity before it is added to the world
         val nmsWorld = (location.world as CraftWorld).handle
 
-        val fakePlayer = EntityType.HUSK.create(nmsWorld)!!
+        val fakePlayer = EntityType.HUSK.create(nmsWorld, EntitySpawnReason.COMMAND)!!
 
         fakePlayer.setPos(location.x, location.y, location.z)
         fakePlayer.setRot(location.yaw, location.pitch)

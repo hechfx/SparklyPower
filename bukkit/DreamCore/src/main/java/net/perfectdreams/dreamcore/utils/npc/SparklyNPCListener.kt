@@ -177,6 +177,7 @@ class SparklyNPCListener(val m: SparklyNPCManager) : Listener {
                                                             0,
                                                             GameType.DEFAULT_MODE,
                                                             null,
+                                                            0,
                                                             null
                                                         )
                                                     )
