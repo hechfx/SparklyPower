@@ -37,7 +37,7 @@ class SpeedCommand(val m: DreamMini) : SparklyCommand(arrayOf("speed", "velocida
 
 			val speed = speedLevel / 5
 
-			if (speed in 0.1..1.0) {
+			if (speed in 0.0..1.0) {
 
 				if (type == "fly") {
 					user.flySpeed = speed
