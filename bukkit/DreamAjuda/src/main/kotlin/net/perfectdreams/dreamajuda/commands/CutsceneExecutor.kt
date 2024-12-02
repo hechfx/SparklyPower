@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.level.*
 import net.perfectdreams.dreamajuda.*
-import net.perfectdreams.dreamajuda.commands.Tutorial2Executor.DreamEmptyWorldGenerator
 import net.perfectdreams.dreamajuda.cutscenes.SparklyCutsceneCamera
 import net.perfectdreams.dreamajuda.cutscenes.SparklyTutorialCutsceneConfig
 import net.perfectdreams.dreamajuda.cutscenes.SparklyTutorialCutsceneFinalCut
@@ -25,6 +24,8 @@ import net.perfectdreams.dreamcore.utils.extensions.teleportToServerSpawnWithEff
 import net.perfectdreams.dreamcore.utils.scheduler.delayTicks
 import net.perfectdreams.dreamcore.utils.scheduler.onAsyncThread
 import net.perfectdreams.dreamcore.utils.scheduler.onMainThread
+import net.perfectdreams.dreamemptyworldgenerator.EmptyBiomeProvider
+import net.perfectdreams.dreamemptyworldgenerator.EmptyWorldGenerator
 import org.bukkit.*
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.EntityType
@@ -48,20 +49,22 @@ class CutsceneExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
 
             // TODO: Add a mutex or, if the user is in a revamped tutorial world, kick them out
             // Alt version that loads the template world!
-            val worldName = "RevampedTutorialWorld_${player.name}"
+            val worldName = "EphemeralWorld_RevampedTutorialWorld_${player.name}"
             File(m.dataFolder, "template_world").copyRecursively(File(worldName), true)
 
             onMainThread {
                 val x = measureTimedValue {
                     Bukkit.createWorld(
                         WorldCreator.name(worldName)
-                            .biomeProvider(DreamEmptyWorldGenerator.EmptyBiomeProvider())
-                            .generator(DreamEmptyWorldGenerator.EmptyWorldGenerator())
+                            .biomeProvider(EmptyBiomeProvider())
+                            .generator(EmptyWorldGenerator())
                             .type(WorldType.FLAT)
                             .keepSpawnLoaded(TriState.FALSE)
                             .generateStructures(false)
                     )!!
                 }
+
+                m.logger.info("Took ${x.duration} to load the ephemeral world for ${player.name}")
 
                 val revampedTutorialIslandWorld = x.value
                 revampedTutorialIslandWorld.isAutoSave = false
@@ -69,7 +72,7 @@ class CutsceneExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
                 // Bukkit.broadcastMessage("Took ${x.duration} to load the world!")
 
                 // This is the end position of the cutscene, we also NEED to teleport the player to there to cause the chunks to load
-                player.teleport(Location(x.value, -68.49795683082831, 106.0, -85.61882215939532, -0.14522988f, -0.35526463f))
+                player.teleport(Location(revampedTutorialIslandWorld, -68.49795683082831, 106.0, -85.61882215939532, -0.14522988f, -0.35526463f))
 
                 // We need to delay it by one tick to let the chunks to ACTUALLY be loaded, to avoid NPE when attempting to create the GlobalSceneObjects
                 delayTicks(1L)
@@ -97,6 +100,7 @@ class CutsceneExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
                     Bukkit.unloadWorld(worldName, false)
                 }
 
+                m.logger.info("Took ${y.duration} to unload the ephemeral world for ${player.name}")
                 // Bukkit.broadcastMessage("Took ${y.duration} to unload the world!")
 
                 /* onAsyncThread {

@@ -38,7 +38,8 @@ class SparklyCutsceneCamera(val m: DreamAjuda, val player: Player) {
     fun setCameraLocation(location: Location, easingTicks: Int) {
         if (!alreadySpawnedAndSpectating || easingTicks == 0) {
             // We ALWAYS recreate the camera on 0 easing ticks, because there is an issue where, even if you send the packets in the right order (metadata -> teleport), the client may process it out of order and cause issues
-            Bukkit.broadcastMessage("Creating new camera, setting $easingTicks ticks for easing (bundle)")
+            if (player.name == "MrPowerGamerBR")
+                player.sendMessage("Creating new camera, setting $easingTicks ticks for easing (bundle)")
 
             val add = ClientboundAddEntityPacket(
                 allocatedEntityId,
@@ -82,7 +83,9 @@ class SparklyCutsceneCamera(val m: DreamAjuda, val player: Player) {
 
             this.alreadySpawnedAndSpectating = true
         } else {
-            Bukkit.broadcastMessage("Updating camera location, using $easingTicks ticks for easing (bundle)")
+            if (player.name == "MrPowerGamerBR")
+                player.sendMessage("Updating camera location, using $easingTicks ticks for easing (bundle)")
+
             val metadata = ClientboundSetEntityDataPacket(
                 allocatedEntityId,
                 listOf(

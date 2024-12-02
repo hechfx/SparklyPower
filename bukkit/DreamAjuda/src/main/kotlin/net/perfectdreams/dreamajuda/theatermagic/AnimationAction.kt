@@ -1,11 +1,8 @@
 package net.perfectdreams.dreamajuda.theatermagic
 
 import kotlinx.serialization.Serializable
-import net.perfectdreams.dreamajuda.AbsoluteLocation
-import org.bukkit.entity.Entity
 import org.bukkit.entity.Pose
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 
 @Serializable
 sealed class AnimationAction {

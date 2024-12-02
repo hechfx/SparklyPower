@@ -1,7 +1,6 @@
 package net.perfectdreams.dreamajuda.theatermagic
 
 import kotlinx.coroutines.Job
-import net.perfectdreams.dreamajuda.AbsoluteLocation
 import net.perfectdreams.dreamajuda.DreamAjuda
 import net.perfectdreams.dreamcore.utils.BlockUtils
 import net.perfectdreams.dreamcore.utils.ItemUtils
@@ -11,11 +10,9 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.World
-import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
-import java.util.UUID
 import kotlin.time.measureTime
 
 class TheaterMagicRecordingAnimation(
@@ -102,7 +99,7 @@ class TheaterMagicRecordingAnimation(
                             }
                         }
                     }
-                }.let { Bukkit.broadcastMessage("Took $it to process players") }
+                }// .let { Bukkit.broadcastMessage("Took $it to process players") }
 
                 val currentBlocksSnapshot = snapshotRegionBlockStates()
 
@@ -112,7 +109,7 @@ class TheaterMagicRecordingAnimation(
                         val og = this@TheaterMagicRecordingAnimation.currentBlocksSnapshot[currentBlockSnapshot.key]!!
 
                         if (og.blockData != currentBlockSnapshot.value.blockData) {
-                            Bukkit.broadcastMessage("Changed block!")
+                            // Bukkit.broadcastMessage("Changed block!")
 
                             isDirty = true
                             addAction(
@@ -135,7 +132,7 @@ class TheaterMagicRecordingAnimation(
                         this@TheaterMagicRecordingAnimation.currentBlocksSnapshot.clear()
                         this@TheaterMagicRecordingAnimation.currentBlocksSnapshot.putAll(currentBlocksSnapshot)
                     }
-                }.let { Bukkit.broadcastMessage("Took $it to process snapshots") }
+                }// .let { Bukkit.broadcastMessage("Took $it to process snapshots") }
 
                 delayTicks(1L)
             }
@@ -163,7 +160,7 @@ class TheaterMagicRecordingAnimation(
             val currentBlock = this@TheaterMagicRecordingAnimation.currentBlocksSnapshot[block.key]!!
 
             if (block.value.blockData != currentBlock.blockData) {
-                Bukkit.broadcastMessage("Reverting original blocks (maybe)")
+                // Bukkit.broadcastMessage("Reverting original blocks (maybe)")
                 addActionRelativeTick(
                     0,
                     AnimationAction.UpdatedBlock(

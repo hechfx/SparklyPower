@@ -42,7 +42,7 @@ class RecordingPlaybackContext(
             val accumulatedEquipmentActions = mutableListOf<AnimationAction.ActiveEquipment>()
 
             for (tick in 0 until totalAnimationDuration) {
-                Bukkit.broadcastMessage("Tick $tick of $totalAnimationDuration")
+                // Bukkit.broadcastMessage("Tick $tick of $totalAnimationDuration")
                 val keyframe = storedRecording.keyframes[tick]
 
                 if (keyframe != null) {
@@ -83,7 +83,7 @@ class RecordingPlaybackContext(
 
                             is AnimationAction.SpawnEntity -> {
                                 val entity = CraftMagicNumbers.INSTANCE.deserializeEntity(Base64.getDecoder().decode(action.serializedEntity), world)
-                                Bukkit.broadcastMessage("Spawning entity ${entity.type} at... ${action.location.toLocation(world)}")
+                                // Bukkit.broadcastMessage("Spawning entity ${entity.type} at... ${action.location.toLocation(world)}")
                                 entity.spawnAt(action.location.toLocation(world))
                                 recordingIdToRealEntity[action.uniqueId] = entity
                             }

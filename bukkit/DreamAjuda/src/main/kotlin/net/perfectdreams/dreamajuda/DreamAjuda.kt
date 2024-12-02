@@ -35,7 +35,6 @@ class DreamAjuda : KotlinPlugin(), Listener {
 		val IS_RULES_SIGN = SparklyNamespacedBooleanKey("is_rules_sign")
 	}
 
-	val keyframerManager = PathKeyframerManager(this)
 	val theaterMagicManager = TheaterMagicManager(this)
 
 	override fun softEnable() {
@@ -50,6 +49,7 @@ class DreamAjuda : KotlinPlugin(), Listener {
 		registerCommand(Tutorial3Command(this))
 		registerCommand(LocationToCodeCommand(this))
 		registerCommand(TheaterMagicCommand(this))
+		registerCommand(CutsceneCommand(this))
 	}
 
 	override fun softDisable() {
