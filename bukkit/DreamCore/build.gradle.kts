@@ -104,14 +104,9 @@ tasks {
         }
     }
 
-    reobfJar {
-        // For some reason the userdev plugin is using "unspecified" as the suffix, and that's not a good name
-        // So we are going to change it to "PluginName-reobf.jar"
-        outputJar.set(layout.buildDirectory.file("libs/${project.name}-reobf.jar"))
-    }
-
     "build" {
         dependsOn(shadowJar)
-        dependsOn(reobfJar)
     }
 }
+
+paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION
