@@ -4,8 +4,9 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.perfectdreams.dreamajuda.commands.AjudaExecutor
 import net.perfectdreams.dreamajuda.commands.TransformRulesSignExecutor
-import net.perfectdreams.dreamajuda.commands.declarations.AjudaCommand
-import net.perfectdreams.dreamajuda.commands.declarations.DreamAjudaCommand
+import net.perfectdreams.dreamajuda.commands.declarations.*
+import net.perfectdreams.dreamajuda.theatermagic.TheaterMagicListener
+import net.perfectdreams.dreamajuda.theatermagic.TheaterMagicManager
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.adventure.displayNameWithoutDecorations
 import net.perfectdreams.dreamcore.utils.adventure.sendTextComponent
@@ -34,12 +35,21 @@ class DreamAjuda : KotlinPlugin(), Listener {
 		val IS_RULES_SIGN = SparklyNamespacedBooleanKey("is_rules_sign")
 	}
 
+	val keyframerManager = PathKeyframerManager(this)
+	val theaterMagicManager = TheaterMagicManager(this)
+
 	override fun softEnable() {
 		super.softEnable()
 
 		registerEvents(this)
+		registerEvents(TheaterMagicListener(theaterMagicManager))
 		registerCommand(AjudaCommand(this))
 		registerCommand(DreamAjudaCommand(this))
+		// registerCommand(TutorialCommand(this))
+		// registerCommand(Tutorial2Command(this))
+		registerCommand(Tutorial3Command(this))
+		registerCommand(LocationToCodeCommand(this))
+		registerCommand(TheaterMagicCommand(this))
 	}
 
 	override fun softDisable() {

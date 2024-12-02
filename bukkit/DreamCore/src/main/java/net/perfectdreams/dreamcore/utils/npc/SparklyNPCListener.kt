@@ -16,6 +16,7 @@ import net.perfectdreams.dreamcore.event.PlayerScoreboardCreatedEvent
 import net.perfectdreams.dreamcore.utils.JVMUnsafeUtils
 import net.perfectdreams.dreamcore.utils.get
 import org.bukkit.craftbukkit.entity.CraftPlayer
+import org.bukkit.entity.Husk
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -43,7 +44,7 @@ class SparklyNPCListener(val m: SparklyNPCManager) : Listener {
                     // Bail out!
                     entity.remove()
                 } else {
-                    npcData.updateEntity(entity)
+                    npcData.updateEntity(entity as Husk)
                 }
             }
         }
@@ -121,11 +122,12 @@ class SparklyNPCListener(val m: SparklyNPCManager) : Listener {
 
                             // println("NPC data: ${npcData}")
                             if (npcUniqueId != null) {
+                                val npcData = m.npcEntities[npcUniqueId]!!
                                 m.m.logger.info { "Intercepted packet for entity ${npcUniqueId}! Replacing set entity packets..." }
 
                                 super.write(
                                     ctx,
-                                    ClientboundSetEntityDataPacket(msg.id, listOf(SynchedEntityData.DataValue(17, EntityDataSerializers.BYTE, 127.toByte()))),
+                                    ClientboundSetEntityDataPacket(msg.id, npcData.createMetadata()),
                                     promise
                                 )
                                 return
@@ -191,7 +193,7 @@ class SparklyNPCListener(val m: SparklyNPCManager) : Listener {
                                             newSubPackets.add(subPacket)
 
                                             // Sets the skin data (to make all skin layers show up)
-                                            newSubPackets.add(ClientboundSetEntityDataPacket(subPacket.id, listOf(SynchedEntityData.DataValue(17, EntityDataSerializers.BYTE, 127.toByte()))))
+                                            newSubPackets.add(ClientboundSetEntityDataPacket(subPacket.id, npcData.createMetadata()))
 
                                             // Set the yaw and pitch because, for some reason, player entities do not have the yaw correctly set when they are spawned
                                             newSubPackets.add(

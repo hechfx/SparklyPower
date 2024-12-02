@@ -9,6 +9,7 @@ import com.comphenix.protocol.wrappers.EnumWrappers
 import com.okkero.skedule.schedule
 import me.ryanhamshire.GriefPrevention.Claim
 import me.ryanhamshire.GriefPrevention.ClaimPermission
+import net.minecraft.network.protocol.Packet
 import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.MeninaAPI
 import net.perfectdreams.dreamcore.utils.PlayerUtils
@@ -18,6 +19,7 @@ import net.perfectdreams.dreamcore.utils.registerEvents
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
+import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -96,3 +98,12 @@ fun Player.canManageClaim(claim: Claim, staffBypass: Boolean) =
  */
 fun Player.hasAnyPermissionAtClaim(claim: Claim, staffBypass: Boolean) =
     this.canBuildAtClaim(claim, staffBypass) || this.canManageClaim(claim, staffBypass)
+
+/**
+ * Sends a NMS (`net.minecraft.server`) packet to the [Player]
+ *
+ * @param packet the NMS packet that will be sent
+ */
+fun Player.sendPacket(packet: Packet<*>) {
+    (this as CraftPlayer).handle.connection.send(packet)
+}

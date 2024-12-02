@@ -26,6 +26,8 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.map.MapPalette
 import org.bukkit.map.MapRenderer
+import org.bukkit.map.MapView
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
@@ -36,6 +38,11 @@ class DreamMapMakerCommand(val m: DreamMapWatermarker) : SparklyCommandDeclarati
         subcommand(listOf("imagemap")) {
             permissions = listOf("dreammapmaker.imagemap")
             executor = ImageMapExecutor()
+        }
+
+        subcommand(listOf("multiimagemap")) {
+            permissions = listOf("dreammapmaker.imagemap")
+            executor = MultiImageMapExecutor(m)
         }
 
         subcommand(listOf("dumprenderers")) {
@@ -163,7 +170,7 @@ class DreamMapMakerCommand(val m: DreamMapWatermarker) : SparklyCommandDeclarati
                         context.sendMessage {
                             color(NamedTextColor.YELLOW)
                             append("Se precisar, você pode se dar o mapa usando ")
-                            appendCommand("/give ${player.name} minecraft:filled_map{map:${map.id}}")
+                            appendCommand("/give ${player.name} minecraft:filled_map[map_id:${map.id}]")
                         }
                     }
 
@@ -175,6 +182,160 @@ class DreamMapMakerCommand(val m: DreamMapWatermarker) : SparklyCommandDeclarati
                     onAsyncThread {
                         withContext(Dispatchers.IO) {
                             ImageIO.write(resizedImageData, "png", File(m.imageFolder, "${map.id}.png"))
+                        }
+                    }
+
+                    context.sendMessage {
+                        color(NamedTextColor.GREEN)
+                        content("Imagem salva com sucesso!")
+                    }
+                }
+            }
+        }
+    }
+
+    class MultiImageMapExecutor(val m: DreamMapWatermarker) : SparklyCommandExecutor() {
+        inner class Options : CommandOptions() {
+            val urlOrFileName = greedyString("url_or_file_name")
+        }
+
+        override val options = Options()
+
+        // Code from Pantufa's Custom Map
+        fun isImageEmpty(image: BufferedImage): Boolean {
+            for (x in 0 until image.width) {
+                for (y in 0 until image.height) {
+                    if (Color(image.getRGB(x, y), true).alpha != 0) {
+                        return false
+                    }
+                }
+            }
+            return true
+        }
+
+        sealed class ItemFrameImage(val x: Int, val y: Int) {
+            class FrameImage(x: Int, y: Int, val image: BufferedImage) : ItemFrameImage(x, y)
+            class EmptyFrame(x: Int, y: Int) : ItemFrameImage(x, y)
+        }
+
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            val player = context.requirePlayer()
+
+            val urlOrFileName = args[options.urlOrFileName]
+            m.launchAsyncThread {
+                context.sendMessage {
+                    color(NamedTextColor.YELLOW)
+                    content("Tentando baixar a imagem...")
+                }
+
+                val fileData = DreamUtils.http.get(urlOrFileName) {}
+                val imageData = try {
+                    ImageIO.read(fileData.readBytes().inputStream())
+                } catch (e: IOException) {
+                    context.sendMessage {
+                        color(NamedTextColor.RED)
+                        content("Imagem não pode ser baixada!")
+                    }
+                    return@launchAsyncThread
+                }
+
+                var itemFrameX = 0
+                var itemFrameY = 0
+                val targetItemFrameWidth = imageData.width / 128
+                val targetItemFrameHeight = imageData.height / 128
+                val generatedItemFrameImages = mutableListOf<ItemFrameImage>()
+
+                while (true) {
+                    val image = imageData.getSubimage(itemFrameX * 128, itemFrameY * 128, 128, 128)
+
+                    if (isImageEmpty(image)) {
+                        generatedItemFrameImages.add(ItemFrameImage.EmptyFrame(itemFrameX, itemFrameY))
+                    } else {
+                        generatedItemFrameImages.add(ItemFrameImage.FrameImage(itemFrameX, itemFrameY, image))
+                    }
+
+                    itemFrameX++
+                    if (itemFrameX == targetItemFrameWidth) {
+                        itemFrameX = 0
+                        itemFrameY++
+                        if (itemFrameY == targetItemFrameHeight) {
+                            break
+                        }
+                    }
+                }
+
+                onMainThread {
+                    var newMap = false
+
+                    val imageMaps = generatedItemFrameImages.filterIsInstance<ItemFrameImage.FrameImage>()
+                    val mapResults = mutableMapOf<MapView, ItemFrameImage.FrameImage>()
+
+                    val maps = run {
+                        context.sendMessage {
+                            color(NamedTextColor.YELLOW)
+                            content("Criando mapas do zero...")
+                        }
+
+                        newMap = true
+
+                        for (imageMap in imageMaps) {
+                            val bukkitMap = Bukkit.createMap(player.world)
+                            mapResults[bukkitMap] = imageMap
+                        }
+                    }
+
+                    context.sendMessage {
+                        color(NamedTextColor.YELLOW)
+                        content("Aplicando imagem nos mapas...")
+                    }
+
+                    for ((map, frameImage) in mapResults) {
+                        map.isLocked = true // Optimizes the map because the server doesn't attempt to get the world data when the player is holding the map in their hand
+                        val renderers: List<MapRenderer> = map.renderers
+
+                        for (r in renderers) {
+                            map.removeRenderer(r)
+                        }
+
+                        map.addRenderer(ImgRenderer(MapPalette.imageToBytes(frameImage.image)))
+                    }
+
+                    context.sendMessage {
+                        color(NamedTextColor.GREEN)
+                        content("Mapas criados com sucesso! IDs: ${mapResults.keys.map { it.id }}")
+                    }
+
+                    // Give the player the map if it was a map created from scratch
+                    for ((map, _) in mapResults) {
+                        player.inventory.addItem(
+                            ItemStack(Material.FILLED_MAP)
+                                .meta<MapMeta> {
+                                    this.mapView = map
+                                }
+                        )
+                    }
+
+                    context.sendMessage {
+                        content("Como eu tirei o novo mapa do meu fiofo, eu adicionei o mapa no seu inventário!")
+                        color(NamedTextColor.YELLOW)
+                    }
+
+                    /* context.sendMessage {
+                        color(NamedTextColor.YELLOW)
+                        append("Se precisar, você pode se dar os mapa usando ")
+                        appendCommand("/give ${player.name} minecraft:filled_map[map_id=${map.id}]")
+                    } */
+
+                    context.sendMessage {
+                        color(NamedTextColor.YELLOW)
+                        content("Como a imagem foi aplicada no mapa corretamente, irei salvar a imagem para que ela seja restaurada no mapa quando o servidor reiniciar...")
+                    }
+
+                    onAsyncThread {
+                        for ((map, frameImage) in mapResults) {
+                            withContext(Dispatchers.IO) {
+                                ImageIO.write(frameImage.image, "png", File(m.imageFolder, "${map.id}.png"))
+                            }
                         }
                     }
 
