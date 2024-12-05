@@ -2,6 +2,8 @@ package net.perfectdreams.dreamkits.commands
 
 import com.okkero.skedule.SynchronizationContext
 import com.okkero.skedule.schedule
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -11,7 +13,9 @@ import net.perfectdreams.dreamcore.utils.commands.AbstractCommand
 import net.perfectdreams.dreamcore.utils.commands.annotation.Subcommand
 import net.perfectdreams.dreamcore.utils.commands.annotation.SubcommandPermission
 import net.perfectdreams.dreamcore.utils.scheduler.onAsyncThread
+import net.perfectdreams.dreamcore.utils.scheduler.onMainThread
 import net.perfectdreams.dreamkits.DreamKits
+import net.perfectdreams.dreamkits.events.PlayerKitReceiveEvent
 import net.perfectdreams.dreamkits.tables.Kits
 import net.perfectdreams.dreamkits.utils.PlayerKitsInfo
 import org.bukkit.Bukkit
@@ -22,6 +26,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.upsert
 
 class KitCommand(val m: DreamKits) : AbstractCommand("kits", listOf("kit")) {
+	// We use a mutex to avoid button spamming causing the bot to go down
+	private val mutex = Mutex()
+
 	@Subcommand
 	fun root(p0: CommandSender) {
 		if (p0 !is Player)
@@ -152,62 +159,67 @@ class KitCommand(val m: DreamKits) : AbstractCommand("kits", listOf("kit")) {
 			return
 		}
 
-		scheduler().schedule(m, SynchronizationContext.ASYNC) {
-			val kitsInfo = transaction {
-				Kits.select { Kits.id eq p0.uniqueId }.firstOrNull()?.get(Kits.kitsInfo)
-			} ?: PlayerKitsInfo()
+		m.launchAsyncThread {
+			mutex.withLock {
+				val kitsInfo = transaction {
+					Kits.select { Kits.id eq p0.uniqueId }.firstOrNull()?.get(Kits.kitsInfo)
+				} ?: PlayerKitsInfo()
 
-			val lastUsage = kitsInfo.usedKits.getOrDefault(kit.name, 0L)
-			val diff = System.currentTimeMillis() - lastUsage
+				val lastUsage = kitsInfo.usedKits.getOrDefault(kit.name, 0L)
+				val diff = System.currentTimeMillis() - lastUsage
 
-			switchContext(SynchronizationContext.SYNC)
+				onMainThread {
+					if (kit.delay * 1000 > diff && !p0.hasPermission("dreamkits.bypasstimer")) {
+						val nextUse = lastUsage + (kit.delay * 1000)
+						p0.sendMessage(
+							textComponent {
+								color(NamedTextColor.RED)
+								append(DreamKits.PREFIX)
+								append(" Você ainda precisa esperar ")
+								append(DateUtils.formatDateDiff(nextUse)) {
+									color(NamedTextColor.LIGHT_PURPLE)
+								}
+								append(" antes de poder pegar este kit...")
+							}
+						)
+						return@onMainThread
+					}
 
-			if (kit.delay * 1000 > diff && !p0.hasPermission("dreamkits.bypasstimer")) {
-				val nextUse = lastUsage + (kit.delay * 1000)
-				p0.sendMessage(
-					textComponent {
-						color(NamedTextColor.RED)
-						append(DreamKits.PREFIX)
-						append(" Você ainda precisa esperar ")
-						append(DateUtils.formatDateDiff(nextUse)) {
-							color(NamedTextColor.LIGHT_PURPLE)
+					kitsInfo.usedKits[kit.name] = System.currentTimeMillis()
+
+					onAsyncThread {
+						transaction {
+							Kits.upsert(Kits.id) {
+								it[id] = p0.uniqueId
+								it[this.kitsInfo] = kitsInfo
+							}
 						}
-						append(" antes de poder pegar este kit...")
 					}
-				)
-				return@schedule
-			}
 
-			kitsInfo.usedKits[kit.name] = System.currentTimeMillis()
+					val kitReceiveEvent = PlayerKitReceiveEvent(p0, kit)
+					val success = kitReceiveEvent.callEvent()
+					if (!success)
+						return@onMainThread
 
-			switchContext(SynchronizationContext.ASYNC)
+					m.giveKit(p0, kit)
 
-			transaction {
-				Kits.upsert(Kits.id) {
-					it[id] = p0.uniqueId
-					it[this.kitsInfo] = kitsInfo
+					p0.sendMessage(
+						textComponent {
+							color(NamedTextColor.GREEN)
+							append(DreamKits.PREFIX)
+							append(" Você recebeu o kit ")
+							append(kit.fancyName) {
+								color(NamedTextColor.AQUA)
+							}
+							append("!")
+						}
+					)
+
+					onAsyncThread {
+						Webhooks.PANTUFA_INFO?.send("**${p0.name}** recebeu kit `${kit.name}`.")
+					}
 				}
 			}
-
-			switchContext(SynchronizationContext.SYNC)
-
-			m.giveKit(p0, kit)
-
-			p0.sendMessage(
-				textComponent {
-					color(NamedTextColor.GREEN)
-					append(DreamKits.PREFIX)
-					append(" Você recebeu o kit ")
-					append(kit.fancyName) {
-						color(NamedTextColor.AQUA)
-					}
-					append("!")
-				}
-			)
-
-			switchContext(SynchronizationContext.ASYNC)
-
-			Webhooks.PANTUFA_INFO?.send("**${p0.name}** recebeu kit `${kit.name}`.")
 		}
 	}
 
@@ -254,7 +266,7 @@ class KitCommand(val m: DreamKits) : AbstractCommand("kits", listOf("kit")) {
 			return
 		}
 
-		scheduler().schedule(m, SynchronizationContext.SYNC) {
+		m.launchMainThread {
 			m.giveKit(player, kit)
 
 			p0.sendMessage(
@@ -269,9 +281,9 @@ class KitCommand(val m: DreamKits) : AbstractCommand("kits", listOf("kit")) {
 				}
 			)
 
-			switchContext(SynchronizationContext.ASYNC)
-
-			Webhooks.PANTUFA_INFO?.send("**${player.name}** recebeu kit `${kit.name}`, dado por **${p0.name}**.")
+			onAsyncThread {
+				Webhooks.PANTUFA_INFO?.send("**${player.name}** recebeu kit `${kit.name}`, dado por **${p0.name}**.")
+			}
 		}
 	}
 }
