@@ -15,6 +15,7 @@ import net.perfectdreams.dreamcore.event.PlayerScoreboardRemovedEvent
 import net.perfectdreams.dreamcore.tables.EventVictories
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.adventure.textComponent
+import net.perfectdreams.dreamcore.utils.scheduler.delayTicks
 import net.perfectdreams.dreamscoreboard.commands.*
 import net.perfectdreams.dreamscoreboard.listeners.TagListener
 import net.perfectdreams.dreamscoreboard.utils.PlayerScoreboard
@@ -116,7 +117,7 @@ class DreamScoreboard : KotlinPlugin(), Listener {
 			}
 		}
 
-		scheduler().schedule(this, SynchronizationContext.ASYNC) {
+		launchMainThread {
 			while (true) {
 				CURRENT_TICK++
 
@@ -138,7 +139,7 @@ class DreamScoreboard : KotlinPlugin(), Listener {
 						e.printStackTrace()
 					}
 				}
-				waitFor(20 * 4) // 4 seconds each update
+				delayTicks(20 * 4) // 4 seconds each update
 			}
 		}
 

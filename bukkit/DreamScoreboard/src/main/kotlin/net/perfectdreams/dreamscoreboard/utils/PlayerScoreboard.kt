@@ -4,6 +4,7 @@ import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamscoreboard.DreamScoreboard
+import net.perfectdreams.dreamscoreboard.events.PlayerScoreboardRefreshEvent
 import net.perfectdreams.dreamvanish.DreamVanishAPI
 import net.perfectdreams.dreamvote.DreamVote
 import org.bukkit.Bukkit
@@ -107,58 +108,70 @@ class PlayerScoreboard(val m: DreamScoreboard, val player: Player, val phoenix: 
 """.trimMargin().toBaseComponent()
 		)
 
-		//    |§e§lSeja bem-vind${player.artigo} ${player.displayName}§e§l!
-		//    |§6Modéstia à parte... esse servidor é incrível!
-		//    |§7Lembre-se... você é incrível, continue sendo uma pessoa maravilhosa e ajude a
-		//    |§7transformar o mundo em um lugar melhor!
-		var idx = 15
-
-		idx = setupPlayersOnline(idx)
-		phoenix.setText("§c", idx--)
-
 		if (DreamScoreboard.CURRENT_TICK == 0) {
 			// Teams are only updated once every 16 seconds because:
 			// * It has a lot of team requests, which can cause lag
 			// * It doesn't really need to be updated every single task, since most of the times the teams
 			// doesn't really change that fast
 			//
-			// In the future we could set up a way for plugins to register for clubes changes, then we would be able t
+			// In the future we could set up a way for plugins to register for clubes changes, then we would be able to
 			// request an update without causing performance issues
 			setupTeams()
-			idx = setupClock(idx)
-			phoenix.setText("§c", idx--)
-
-			idx = setupMoney(idx)
-
-			phoenix.setText("§c", idx--)
-			idx = setupActiveEvents(idx)
 		}
 
-		if (DreamScoreboard.CURRENT_TICK == 1) {
-			idx = setupUpcomingEvents(idx)
-		}
+		//    |§e§lSeja bem-vind${player.artigo} ${player.displayName}§e§l!
+		//    |§6Modéstia à parte... esse servidor é incrível!
+		//    |§7Lembre-se... você é incrível, continue sendo uma pessoa maravilhosa e ajude a
+		//    |§7transformar o mundo em um lugar melhor!
+		val playerScoreboardRefreshEvent = PlayerScoreboardRefreshEvent(
+			player,
+			phoenix
+		) {
+			var idx = 15
 
-		if (DreamScoreboard.CURRENT_TICK == 2) {
-			idx = setupStaff(idx)
-		}
-
-		if (DreamScoreboard.CURRENT_TICK == 3) {
-			idx = setupLastVoter(idx)
+			idx = setupPlayersOnline(idx)
 			phoenix.setText("§c", idx--)
-			idx = setupFacebook(idx)
-			phoenix.setText("§c", idx--)
-			idx = setupTwitter(idx)
-			phoenix.setText("§c", idx--)
-			idx = setupDiscord(idx)
+
+			if (DreamScoreboard.CURRENT_TICK == 0) {
+				idx = setupClock(idx)
+				phoenix.setText("§c", idx--)
+
+				idx = setupMoney(idx)
+
+				phoenix.setText("§c", idx--)
+				idx = setupActiveEvents(idx)
+			}
+
+			if (DreamScoreboard.CURRENT_TICK == 1) {
+				idx = setupUpcomingEvents(idx)
+			}
+
+			if (DreamScoreboard.CURRENT_TICK == 2) {
+				idx = setupStaff(idx)
+			}
+
+			if (DreamScoreboard.CURRENT_TICK == 3) {
+				idx = setupLastVoter(idx)
+				phoenix.setText("§c", idx--)
+				idx = setupFacebook(idx)
+				phoenix.setText("§c", idx--)
+				idx = setupTwitter(idx)
+				phoenix.setText("§c", idx--)
+				idx = setupDiscord(idx)
+			}
+
+			idx
 		}
+		playerScoreboardRefreshEvent.callEvent()
+		val usedLines = playerScoreboardRefreshEvent.block.invoke(this)
 
-		var lastIndex = this.lastIndex
+		val lastIndex = this.lastIndex
 
-		for (idx in idx downTo (Math.max(1, lastIndex))) {
+		for (idx in usedLines downTo (Math.max(1, lastIndex))) {
 			phoenix.removeLine(idx)
 		}
 
-		this.lastIndex = idx
+		this.lastIndex = usedLines
 	}
 
 	private fun setupPlayersOnline(_idx: Int): Int {
