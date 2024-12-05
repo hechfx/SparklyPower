@@ -10,6 +10,7 @@ import net.perfectdreams.dreamcore.utils.commands.options.CommandOptions
 import net.perfectdreams.dreamcore.utils.extensions.playTeleportEffects
 import net.perfectdreams.dreamcore.utils.withoutPermission
 import net.perfectdreams.dreamwarps.DreamWarps
+import net.perfectdreams.dreamwarps.events.PlayerWarpTeleportEvent
 
 class WarpCommand(val m: DreamWarps) : SparklyCommandDeclarationWrapper {
 	override fun declaration() = sparklyCommand(listOf("warp", "warps", "dwarps")) {
@@ -48,14 +49,21 @@ class WarpCommand(val m: DreamWarps) : SparklyCommandDeclarationWrapper {
 				return
 			}
 
-			player.teleportAsync(warp.location).thenRun {
+			val warpTeleportEvent = PlayerWarpTeleportEvent(player, warp.name, warp.location)
+			val success = warpTeleportEvent.callEvent()
+			if (!success)
+				return
+
+			val warpTarget = warpTeleportEvent.warpTarget
+
+			player.teleportAsync(warpTarget).thenRun {
 				player.playTeleportEffects()
 				player.sendMessage("${DreamWarps.PREFIX} §aVocê chegou ao seu destino. §cʕ•ᴥ•ʔ")
 				player.sendTitle(
 					"§b${warp.fancyName}",
-					"§3${TextUtils.ROUND_TO_2_DECIMAL.format(warp.location.x)}§b, §3${TextUtils.ROUND_TO_2_DECIMAL.format(
-						warp.location.y
-					)}§b, §3${TextUtils.ROUND_TO_2_DECIMAL.format(warp.location.z)}",
+					"§3${TextUtils.ROUND_TO_2_DECIMAL.format(warpTarget.x)}§b, §3${TextUtils.ROUND_TO_2_DECIMAL.format(
+						warpTarget.y
+					)}§b, §3${TextUtils.ROUND_TO_2_DECIMAL.format(warpTarget.z)}",
 					10,
 					60,
 					10
