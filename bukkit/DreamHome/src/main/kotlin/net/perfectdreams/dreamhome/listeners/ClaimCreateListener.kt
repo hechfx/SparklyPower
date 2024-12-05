@@ -1,6 +1,10 @@
 package net.perfectdreams.dreamhome.listeners
 
 import me.ryanhamshire.GriefPrevention.events.ClaimCreatedEvent
+import net.kyori.adventure.text.format.NamedTextColor
+import net.perfectdreams.dreamcore.utils.adventure.appendCommand
+import net.perfectdreams.dreamcore.utils.adventure.appendTextComponent
+import net.perfectdreams.dreamcore.utils.adventure.textComponent
 import net.perfectdreams.dreamhome.DreamHome
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -26,11 +30,34 @@ class ClaimCreateListener(val m: DreamHome) : Listener {
                     null,
                     creator.location
                 ) {
-                    creator.sendMessage("§aHey, eu percebi que você está marcando o seu primeiro terreno! Para não perdê-lo, eu marquei um teletransporte rápido para ela! §6/home casa")
-                    creator.sendMessage("§aSe você quiser ver a lista de teletransportes rápidos marcados, use §6/home")
-                    creator.sendMessage("§aSe você quiser remarcar a posição do teletransporte rápido, use, use §6/sethome casa")
-                    creator.sendMessage("§aSe você quiser deletar o teletransporte rápido, use, use §6/delhome casa")
-                    creator.sendMessage("§aBoa sorte em sua nova aventura! ^-^")
+                    creator.sendMessage(
+                        textComponent {
+                            color(NamedTextColor.YELLOW)
+                            appendTextComponent {
+                                content("Hey, eu percebi que você está marcando o seu primeiro terreno! Para não perdê-lo, eu marquei um teletransporte rápido para ela! ")
+                                appendCommand("/home casa")
+                            }
+                            appendNewline()
+                            appendTextComponent {
+                                content("Se você quiser ver a lista de teletransportes rápidos marcados, use ")
+                                appendCommand("/home")
+                            }
+                            appendNewline()
+                            appendTextComponent {
+                                content("Se você quiser remarcar a posição do teletransporte rápido, use ")
+                                appendCommand("/sethome casa")
+                            }
+                            appendNewline()
+                            appendTextComponent {
+                                content("Se você quiser deletar o teletransporte rápido, use ")
+                                appendCommand("/delhome casa")
+                            }
+                            appendNewline()
+                            appendTextComponent {
+                                content("Boa sorte em sua nova aventura! ^-^")
+                            }
+                        }
+                    )
                 }
             }
         }
