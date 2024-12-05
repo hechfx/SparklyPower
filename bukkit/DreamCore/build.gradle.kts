@@ -38,7 +38,7 @@ dependencies {
     compileOnlyApi(files("../../libs/WorldEdit.jar"))
     compileOnlyApi(files("../../libs/WorldGuard.jar"))
     compileOnlyApi(files("../../libs/spark-1.10.34-bukkit.jar")) // jitpack doesn't compile spark because it requires Java 17
-    compileOnlyApi("com.github.TechFortress:GriefPrevention:06cc566769") // Using commits instead of pinning a version because GP hasn't released a new version yet
+    compileOnlyApi("com.github.TechFortress:GriefPrevention:194aaf4e8b") // Using commits instead of pinning a version because GP hasn't released a new version yet
     compileOnlyApi("com.github.ChestShop-authors:ChestShop-3:3.12")
     api("net.perfectdreams.commands:command-framework-core:0.0.8")
     api("com.github.SparklyPower:PacketWrapper:88ddd591d8")

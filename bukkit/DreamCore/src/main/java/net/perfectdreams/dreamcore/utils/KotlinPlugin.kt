@@ -27,7 +27,7 @@ import kotlin.coroutines.CoroutineContext
  */
 open class KotlinPlugin : JavaPlugin() {
 	companion object {
-		internal val PLUGIN_TASK_THREAD_LOCAL = ThreadLocal<KotlinPlugin>()
+		val PLUGIN_TASK_THREAD_LOCAL = ThreadLocal<KotlinPlugin>()
 	}
 
 	// Lista de comandos registrados por este plugin
@@ -39,20 +39,11 @@ open class KotlinPlugin : JavaPlugin() {
 	val serverEvents = mutableListOf<ServerEvent>()
 	private val activeJobs = ConcurrentLinkedQueue<Job>()
 	internal val recipes = mutableMapOf<NamespacedKey, Recipe>()
-	private val pendingTasks = ConcurrentLinkedQueue<Job>()
 
 	override fun onEnable() {
 		softEnable()
 
 		registerEvents(RegisterRecipesOnReloadListener(this))
-
-		Bukkit.getScheduler().runTask(
-			this,
-			Runnable {
-				pendingTasks.forEach { it.start() }
-				pendingTasks.clear()
-			}
-		)
 	}
 
 	override fun onDisable() {

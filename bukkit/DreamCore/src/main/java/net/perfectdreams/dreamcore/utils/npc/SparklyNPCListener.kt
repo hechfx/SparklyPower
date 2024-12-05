@@ -1,5 +1,6 @@
 package net.perfectdreams.dreamcore.utils.npc
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import io.netty.channel.ChannelDuplexHandler
@@ -44,8 +45,26 @@ class SparklyNPCListener(val m: SparklyNPCManager) : Listener {
                     // Bail out!
                     entity.remove()
                 } else {
-                    npcData.updateEntity(entity as Husk)
+                    val husk = entity as Husk
+                    npcData.updateEntityReference(husk)
+                    npcData.updateEntity(husk)
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    fun onEntitiesLoad(event: EntityRemoveFromWorldEvent) {
+        val entity = event.entity
+
+        // Is this an NPC?
+        if (entity.persistentDataContainer.get(m.npcKey)) {
+            // Is the entity's unique ID present in the NPC Entities list?
+            val npcData = m.npcEntities[entity.uniqueId]
+
+            if (npcData != null) {
+                // If yes, remove the NPC entity reference!
+                npcData.updateEntityReference(null)
             }
         }
     }

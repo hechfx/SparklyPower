@@ -27,6 +27,9 @@ class SparklyNPC(
     // So we store the unique ID
     val uniqueId: UUID
 ) {
+    // A reference to the entity
+    private var entityRef: Husk? = null
+
     private val PLAYER_EQUIPMENT_SLOTS = setOf(
         EquipmentSlot.HAND,
         EquipmentSlot.OFF_HAND,
@@ -46,6 +49,8 @@ class SparklyNPC(
         private set
     var isSprinting = false
         private set
+    var isVisibleByDefault = true
+        private set
     var nameplateVisibility = Team.OptionStatus.ALWAYS
         private set
     val equipment = NPCEquipment(this)
@@ -54,7 +59,11 @@ class SparklyNPC(
     /**
      * Gets the NPC entity, this may be null if the entity is unloaded
      */
-    fun getEntity() = Bukkit.getEntity(uniqueId) as Husk?
+    fun getEntity() = entityRef
+
+    fun updateEntityReference(newRef: Husk?) {
+        this.entityRef = newRef
+    }
 
     /**
      * Callback that will be invoked when clicking the NPC
@@ -143,6 +152,7 @@ class SparklyNPC(
         for (slot in PLAYER_EQUIPMENT_SLOTS) {
             husk.equipment.setItem(slot, equipment.items[slot])
         }
+        husk.isVisibleByDefault = this.isVisibleByDefault
     }
 
     fun setPose(pose: Pose) {
@@ -152,6 +162,11 @@ class SparklyNPC(
 
     fun setSneaking(state: Boolean) {
         this.isSneaking = state
+        getAndUpdateEntity()
+    }
+
+    fun setVisibleByDefault(visibleByDefault: Boolean) {
+        this.isVisibleByDefault = visibleByDefault
         getAndUpdateEntity()
     }
 

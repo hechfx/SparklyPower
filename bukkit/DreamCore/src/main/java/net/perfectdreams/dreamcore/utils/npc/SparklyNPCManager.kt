@@ -131,15 +131,14 @@ class SparklyNPCManager(val m: DreamCore) {
         owner: Plugin,
         location: Location,
         name: String,
-        skinTextures: SkinTexture? = null
+        skinTextures: SkinTexture? = null,
+        preSpawnSettings: (entity: Husk, npc: SparklyNPC) -> (Unit) = { _, _ -> }
     ): SparklyNPC {
-        // We need to use NMS because we need to know the UUID of the entity before it is added to the world
-        val nmsWorld = (location.world as CraftWorld).handle
-
-        val fakePlayer = EntityType.HUSK.create(nmsWorld, EntitySpawnReason.COMMAND)!!
-
-        fakePlayer.setPos(location.x, location.y, location.z)
-        fakePlayer.setRot(location.yaw, location.pitch)
+        // If we create entities using this, we can get the UUID before it is added to the world
+        val entity = location.world.createEntity(
+            location,
+            Husk::class.java
+        )
 
         var fakePlayerName: String
         while (true) {
@@ -150,7 +149,6 @@ class SparklyNPCManager(val m: DreamCore) {
                 break
         }
 
-        val entity = fakePlayer.bukkitEntity as Husk
         entity.customName(Component.text("SparklyNPC"))
         val npcData = SparklyNPC(
             this,
@@ -162,11 +160,17 @@ class SparklyNPCManager(val m: DreamCore) {
             entity.uniqueId
         )
 
+        npcData.updateEntityReference(entity)
+
+        preSpawnSettings.invoke(entity, npcData)
+
+        npcData.updateEntity(entity)
+
         updateFakePlayerName(npcData)
 
         // We need to store the NPC data BEFORE we spawn them, to avoid the packet interceptor not intercepting the packets due to the NPC data being missing
-        m.logger.info { "Created NPC ${fakePlayer.uuid} with name \"$name\"" }
-        npcEntities[fakePlayer.uuid] = npcData
+        m.logger.info { "Created NPC ${entity.uniqueId} with name \"$name\"" }
+        npcEntities[entity.uniqueId] = npcData
 
         // println("NPC data has been set! ${fakePlayer.uuid}")
 
@@ -181,10 +185,10 @@ class SparklyNPCManager(val m: DreamCore) {
         )
 
         forceSpawn = true
-        nmsWorld.addFreshEntity(fakePlayer, CreatureSpawnEvent.SpawnReason.CUSTOM)
+        entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.CUSTOM)
         forceSpawn = false
 
-        m.logger.info { "NPC was added to the world, they have ${fakePlayer.uuid} (Bukkit ID: ${entity.uniqueId}) with name \"$name\"" }
+        m.logger.info { "NPC was added to the world, they have UUID ${entity.uniqueId} with name \"$name\"" }
 
         return npcData
     }
