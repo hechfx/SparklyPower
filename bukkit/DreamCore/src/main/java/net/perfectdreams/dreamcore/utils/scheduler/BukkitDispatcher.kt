@@ -33,9 +33,10 @@ class BukkitDispatcher(val plugin: JavaPlugin, val async: Boolean = false) : Cor
     }
 
     override fun dispatch(context: CoroutineContext, block: Runnable) {
-        if (!context.isActive) {
+        // We don't need this code here, we want to propagate any cancellations to the coroutine itself
+        /* if (!context.isActive) {
             return
-        }
+        } */
 
         if (!async && Bukkit.isPrimaryThread()) {
             block.run()
