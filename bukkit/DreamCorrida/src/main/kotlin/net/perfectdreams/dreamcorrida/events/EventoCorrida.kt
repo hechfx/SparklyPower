@@ -8,6 +8,8 @@ import com.okkero.skedule.schedule
 import net.perfectdreams.dreamcore.eventmanager.ServerEvent
 import net.perfectdreams.dreamcore.utils.PlayerUtils
 import net.perfectdreams.dreamcore.utils.extensions.meta
+import net.perfectdreams.dreamcore.utils.extensions.pluralize
+import net.perfectdreams.dreamcore.utils.extensions.teleportToServerSpawnWithEffects
 import net.perfectdreams.dreamcore.utils.scheduler
 import net.perfectdreams.dreamcorrida.DreamCorrida
 import net.perfectdreams.dreamcorrida.utils.Checkpoint
@@ -91,6 +93,25 @@ class EventoCorrida(val m: DreamCorrida) : ServerEvent("Corrida", "/corrida") {
         var idx = 0
         scheduler().schedule(m) {
             while (running) {
+                // 10 minutes
+                if (idx == 120) {
+                    val extra = wonPlayers.size.let { if (it == 0) "ninguém conseguiu" else "só ${it.pluralize("pessoa pôde" to "pessoas puderam")}" }
+                    Bukkit.broadcastMessage("§cPoxa, vida! Se passaram 10 minutos e $extra terminar a corrida? Sinceramente, esperava bem mais...")
+
+                    world.players.forEach {
+                        it.fallDistance = 0.0f
+                        it.fireTicks = 0
+                        PlayerUtils.healAndFeed(it)
+
+                        it.teleportToServerSpawnWithEffects()
+                    }
+
+                    running = false
+                    lastTime = System.currentTimeMillis()
+                    wonPlayers.clear()
+                    return@schedule
+                }
+
                 if (idx % 3 == 0) {
                     Bukkit.broadcastMessage("${DreamCorrida.PREFIX} Evento Corrida começou! §6/corrida")
                 }
