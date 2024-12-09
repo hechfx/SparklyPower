@@ -134,9 +134,9 @@ object ChatUtils {
 		val isMainThread = Bukkit.isPrimaryThread()
 		Bukkit.getOnlinePlayers().forEach {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
-			val isCancelled = receivePlayerChatEvent.callEvent()
+			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isCancelled) {
+			if (!isSuccess) {
 				if (it != player)
 					it.sendMessage(forEveryone)
 				else
@@ -182,9 +182,9 @@ object ChatUtils {
 		val isMainThread = Bukkit.isPrimaryThread()
 		Bukkit.getOnlinePlayers().forEach {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
-			val isCancelled = receivePlayerChatEvent.callEvent()
+			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isCancelled) {
+			if (!isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}
@@ -227,9 +227,9 @@ object ChatUtils {
 		val isMainThread = Bukkit.isPrimaryThread()
 		Bukkit.getOnlinePlayers().forEach {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
-			val isCancelled = receivePlayerChatEvent.callEvent()
+			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isCancelled) {
+			if (!isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}
@@ -272,9 +272,9 @@ object ChatUtils {
 		val isMainThread = Bukkit.isPrimaryThread()
 		Bukkit.getOnlinePlayers().forEach {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
-			val isCancelled = receivePlayerChatEvent.callEvent()
+			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isCancelled) {
+			if (!isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}
@@ -315,9 +315,9 @@ object ChatUtils {
 		val isMainThread = Bukkit.isPrimaryThread()
 		Bukkit.getOnlinePlayers().forEach {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
-			val isCancelled = receivePlayerChatEvent.callEvent()
+			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isCancelled) {
+			if (!isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}

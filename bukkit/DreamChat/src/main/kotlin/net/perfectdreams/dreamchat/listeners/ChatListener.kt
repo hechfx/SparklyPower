@@ -840,9 +840,9 @@ class ChatListener(val m: DreamChat) : Listener {
 			val isIgnoringTheSender = m.userData.getStringList("ignore.${onlinePlayer.uniqueId}").contains(player.uniqueId.toString())
 
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(event.isAsynchronous, PlayerReceivePlayerChatEvent.ChatSender.Player(event.player), onlinePlayer)
-			val isCancelled = receivePlayerChatEvent.callEvent()
+			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isIgnoringTheSender && !isCancelled)
+			if (!isIgnoringTheSender && !isSuccess)
 				onlinePlayer.spigot().sendMessage(textComponent)
 		}
 
