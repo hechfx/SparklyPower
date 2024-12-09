@@ -62,6 +62,7 @@ class SkipTutorialExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
             for (staff in Bukkit.getOnlinePlayers().asSequence().filter { it.hasPermission("dreamajuda.snooptutorial") }) {
                 staff.sendMessage(
                     textComponent {
+                        color(NamedTextColor.GRAY)
                         appendTextComponent {
                             append("Player ")
                         }
@@ -70,7 +71,11 @@ class SkipTutorialExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
                             append(activeTutorial.player.name)
                         }
                         appendTextComponent {
-                            append(" pulou o tutorial! Seção do Tutorial que o Player estava: ${activeTutorial.activeTutorial::class.simpleName}")
+                            color(NamedTextColor.RED)
+                            append(" pulou o tutorial")
+                        }
+                        appendTextComponent {
+                            append("! Seção do Tutorial que o Player estava: ${activeTutorial.activeTutorial::class.simpleName}")
                         }
                     }
                 )

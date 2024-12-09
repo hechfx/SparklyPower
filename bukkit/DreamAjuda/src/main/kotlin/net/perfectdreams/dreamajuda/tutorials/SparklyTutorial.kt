@@ -537,7 +537,7 @@ sealed class SparklyTutorial(val playerTutorial: PlayerTutorial) {
         }
 
         override suspend fun onStart() {
-            val location = Location(Bukkit.getWorld("RevampedTutorialIsland"), -120.53712442299097, 126.0, 61.793477096925244, -1.111084f, -2.4269245f)
+            val location = Location(Bukkit.getWorld("RevampedTutorialIsland"), -121.5, 127.0, 60.5, 0f, 0f)
             playerTutorial.player.teleport(location)
             playerTutorial.sendMessageAsPantufa(textComponent { content("Já que estamos no mundo survival...") })
 
@@ -892,6 +892,7 @@ sealed class SparklyTutorial(val playerTutorial: PlayerTutorial) {
             for (staff in Bukkit.getOnlinePlayers().asSequence().filter { it.hasPermission("dreamajuda.snooptutorial") }) {
                 staff.sendMessage(
                     textComponent {
+                        color(NamedTextColor.GRAY)
                         appendTextComponent {
                             append("Player ")
                         }
@@ -900,7 +901,11 @@ sealed class SparklyTutorial(val playerTutorial: PlayerTutorial) {
                             append(playerTutorial.player.name)
                         }
                         appendTextComponent {
-                            append(" terminou o tutorial! Seção do Tutorial que o Player estava: ${this::class.simpleName}")
+                            color(NamedTextColor.GREEN)
+                            append(" terminou o tutorial")
+                        }
+                        appendTextComponent {
+                            append(" terminou o tutorial! Seção do Tutorial que o Player estava: ${this@ProtectTerrain::class.simpleName}")
                         }
                     }
                 )

@@ -145,8 +145,6 @@ class SparklyTutorialCutsceneFinalCut(
             val targetCamera = Location(world, -70.58570933902557, 106.6214850545078, -80.4733926209905, -179.57544f, -10.866125f)
             val targetCamera2 = Location(world, -69.03694868977868, 107.4, -84.7289952581889, -152.9267f, 0.91783327f)
 
-            player.gameMode = GameMode.SPECTATOR
-
             val cameraMove = m.launchMainThread {
                 cutsceneCamera.easeCamera(
                     m,

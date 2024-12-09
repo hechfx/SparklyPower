@@ -58,7 +58,7 @@ class DreamAjudaCommand(val m: DreamAjuda) : SparklyCommandDeclarationWrapper {
                         }
 
                         appendTextComponent {
-                            content(": ${entry.value.activeTutorial::class.simpleName}")
+                            content(": ${entry.value.activeTutorial::class.simpleName} (Completado? ${entry.value.activeTutorial.isCompleted})")
                             color(NamedTextColor.GRAY)
                         }
                     }

@@ -11,6 +11,7 @@ import net.perfectdreams.dreamajuda.cutscenes.CutsceneEntityManager
 import net.perfectdreams.dreamajuda.cutscenes.SparklyCutsceneCamera
 import net.perfectdreams.dreamajuda.cutscenes.SparklyTutorialCutsceneConfig
 import net.perfectdreams.dreamajuda.cutscenes.SparklyTutorialCutsceneFinalCut
+import net.perfectdreams.dreamajuda.tutorials.StartTutorialSource
 import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.commands.context.CommandArguments
 import net.perfectdreams.dreamcore.utils.commands.context.CommandContext
@@ -41,6 +42,6 @@ class TutorialExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
     override fun execute(context: CommandContext, args: CommandArguments) {
         val player = context.requirePlayer()
 
-        m.startBeginningCutsceneAndTutorial(player)
+        m.startBeginningCutsceneAndTutorial(player, StartTutorialSource.COMMAND)
     }
 }

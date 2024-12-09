@@ -35,11 +35,21 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerKickEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.event.player.PlayerTeleportEvent
 
 class RevampedTutorialListener(val m: DreamAjuda) : Listener {
+    @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
+    fun onKick(e: PlayerKickEvent) {
+        // Do not kick players for flying during the tutorial
+        val activeTutorial = m.activeTutorials[e.player]
+
+        if (activeTutorial != null && e.cause == PlayerKickEvent.Cause.FLYING_PLAYER)
+            e.isCancelled = true
+    }
+
     @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
     fun onDropItem(e: PlayerDropItemEvent) {
         val activeTutorial = m.activeTutorials[e.player]
@@ -155,10 +165,9 @@ class RevampedTutorialListener(val m: DreamAjuda) : Listener {
                 }
                 return
             }
-
+        } else {
             e.isCancelled = true
             e.player.sendMessage {
-                e.isCancelled = true
                 textComponent {
                     color(NamedTextColor.RED)
                     content("Você não pode usar isto agora!")

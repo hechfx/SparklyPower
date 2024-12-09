@@ -43,7 +43,9 @@ class PlayerTutorial(
         m,
         // Spawn the NPC somewhere
         player.location.clone().apply {
-            this.y = 0.0
+            this.x = -115.0
+            this.y = 106.0
+            this.z = 75.0
         },
         "Pantufa",
         SkinTexture(
