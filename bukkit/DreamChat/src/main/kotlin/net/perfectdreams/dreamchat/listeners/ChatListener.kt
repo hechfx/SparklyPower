@@ -842,7 +842,7 @@ class ChatListener(val m: DreamChat) : Listener {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(event.isAsynchronous, PlayerReceivePlayerChatEvent.ChatSender.Player(event.player), onlinePlayer)
 			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isIgnoringTheSender && !isSuccess)
+			if (!isIgnoringTheSender && isSuccess)
 				onlinePlayer.spigot().sendMessage(textComponent)
 		}
 

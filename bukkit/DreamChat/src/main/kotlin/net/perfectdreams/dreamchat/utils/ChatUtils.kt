@@ -136,7 +136,7 @@ object ChatUtils {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
 			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isSuccess) {
+			if (isSuccess) {
 				if (it != player)
 					it.sendMessage(forEveryone)
 				else
@@ -184,7 +184,7 @@ object ChatUtils {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
 			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isSuccess) {
+			if (isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}
@@ -229,7 +229,7 @@ object ChatUtils {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
 			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isSuccess) {
+			if (isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}
@@ -274,7 +274,7 @@ object ChatUtils {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
 			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isSuccess) {
+			if (isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}
@@ -317,7 +317,7 @@ object ChatUtils {
 			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
 			val isSuccess = receivePlayerChatEvent.callEvent()
 
-			if (!isSuccess) {
+			if (isSuccess) {
 				it.sendMessage(textComponent)
 			}
 		}
