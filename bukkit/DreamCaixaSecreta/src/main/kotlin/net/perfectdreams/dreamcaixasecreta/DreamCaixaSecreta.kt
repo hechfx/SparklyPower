@@ -29,6 +29,8 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataType
 import java.io.File
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class DreamCaixaSecreta : KotlinPlugin() {
 	companion object {
@@ -209,6 +211,34 @@ class DreamCaixaSecreta : KotlinPlugin() {
 				chance
 			)
 		)
+
+		prizes.add(
+			RandomItem(
+				SparklyItemsRegistry.getItemById("pomni_jester_hat").createItemStack(),
+				chance
+			)
+		)
+
+		val ldt = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+
+		val startChristmas = LocalDateTime.of(2024, 12, 1, 0, 0, 0, 0)
+		val endChristmas = LocalDateTime.of(2025, 1, 1, 0, 0, 0, 0)
+
+		if (ldt in startChristmas..endChristmas) {
+			prizes.add(
+				RandomItem(
+					SparklyItemsRegistry.getItemById("santa_hat").createItemStack(),
+					chance
+				)
+			)
+
+			prizes.add(
+				RandomItem(
+					SparklyItemsRegistry.getItemById("candy_cane_pickaxe").createItemStack(),
+					chance
+				)
+			)
+		}
 
 		prizes.add(
 			RandomItem(

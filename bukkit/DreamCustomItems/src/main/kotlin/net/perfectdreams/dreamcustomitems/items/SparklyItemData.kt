@@ -12,6 +12,7 @@ data class SparklyItemData(
     val material: Material? = null,
     val rarity: ItemRarity? = null,
     val customModelData: Int? = null,
+    val itemModel: String? = null,
     val itemName: String? = null,
     val displayName: String? = null,
     val lore: List<String>? = null,

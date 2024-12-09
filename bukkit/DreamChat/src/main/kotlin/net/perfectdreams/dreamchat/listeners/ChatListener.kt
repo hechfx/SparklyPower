@@ -25,6 +25,7 @@ import net.perfectdreams.dreamcasamentos.DreamCasamentos
 import net.perfectdreams.dreamchat.DreamChat
 import net.perfectdreams.dreamchat.dao.ChatUser
 import net.perfectdreams.dreamchat.events.ApplyPlayerTagsEvent
+import net.perfectdreams.dreamchat.events.PlayerReceivePlayerChatEvent
 import net.perfectdreams.dreamchat.tables.ChatUsers
 import net.perfectdreams.dreamchat.tables.PremiumUsers
 import net.perfectdreams.dreamchat.utils.ChatUtils
@@ -838,7 +839,10 @@ class ChatListener(val m: DreamChat) : Listener {
 			// Verificar se o player está ignorando o player que enviou a mensagem
 			val isIgnoringTheSender = m.userData.getStringList("ignore.${onlinePlayer.uniqueId}").contains(player.uniqueId.toString())
 
-			if (!isIgnoringTheSender)
+			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(event.isAsynchronous, PlayerReceivePlayerChatEvent.ChatSender.Player(event.player), onlinePlayer)
+			val isCancelled = receivePlayerChatEvent.callEvent()
+
+			if (!isIgnoringTheSender && !isCancelled)
 				onlinePlayer.spigot().sendMessage(textComponent)
 		}
 

@@ -13,7 +13,8 @@ class TheaterMagicManager(val m: DreamAjuda) {
 
     fun startRecording(
         player: Player,
-        region: Region
+        region: Region,
+        fileName: String
     ): TheaterMagicRecordingAnimation {
         recordingAnimations[player]?.finish()
 
@@ -33,7 +34,8 @@ class TheaterMagicManager(val m: DreamAjuda) {
                 region.maximumPoint.y.toDouble(),
                 region.maximumPoint.z.toDouble(),
             ),
-            Bukkit.getCurrentTick()
+            Bukkit.getCurrentTick(),
+            fileName
         )
 
         recordingAnimations[player] = animation

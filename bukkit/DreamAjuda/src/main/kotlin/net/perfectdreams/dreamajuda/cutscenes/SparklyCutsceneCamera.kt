@@ -16,7 +16,6 @@ import net.perfectdreams.dreamajuda.DreamAjuda
 import net.perfectdreams.dreamcore.utils.adventure.textComponent
 import net.perfectdreams.dreamcore.utils.extensions.sendPacket
 import net.perfectdreams.dreamcore.utils.scheduler.delayTicks
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.Player
@@ -63,7 +62,7 @@ class SparklyCutsceneCamera(val m: DreamAjuda, val player: Player) {
                         23,
                         EntityDataSerializers.COMPONENT,
                         PaperAdventure.asVanilla(
-                            textComponent("test packet") {}
+                            textComponent("*câmera*") {}
                         )
                     )
                 )

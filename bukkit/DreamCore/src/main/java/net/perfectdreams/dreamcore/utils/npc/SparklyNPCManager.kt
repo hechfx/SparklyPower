@@ -6,11 +6,8 @@ import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EntityType
 import net.perfectdreams.dreamcore.DreamCore
-import net.perfectdreams.dreamcore.utils.SparklyNamespacedBooleanKey
-import net.perfectdreams.dreamcore.utils.get
-import net.perfectdreams.dreamcore.utils.registerEvents
+import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.scheduler.delayTicks
-import net.perfectdreams.dreamcore.utils.set
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Location
@@ -77,21 +74,12 @@ class SparklyNPCManager(val m: DreamCore) {
 
                         // logger.info { "Nearest player is: ${nearestPlayer}" }
                         if (nearestPlayer != null) {
-                            val directionX = nearestPlayer.x - entity.location.x
-                            val directionY = nearestPlayer.y - entity.location.y
-                            val directionZ = nearestPlayer.z - entity.location.z
+                            val yawAndPitch = LocationUtils.getYawAndPitchLookingAt(
+                                entity.location,
+                                nearestPlayer.location
+                            )
 
-                            // Calculate yaw (horizontal angle)
-                            val yaw = Math.toDegrees(atan2(-directionX, directionZ))
-
-                            // Calculate pitch (vertical angle)
-                            val horizontalDistance = sqrt(directionX * directionX + directionZ * directionZ)
-                            val pitch = Math.toDegrees(atan2(-directionY, horizontalDistance))
-
-                            // logger.info { "Yaw: $yaw" }
-                            // logger.info { "Pitch: $pitch" }
-
-                            entity.setRotation(yaw.toFloat(), pitch.toFloat())
+                            entity.setRotation(yawAndPitch.yaw, yawAndPitch.pitch)
                         } else {
                             entity.setRotation(sparklyNPCData.initialLocation.yaw, sparklyNPCData.initialLocation.pitch)
                         }

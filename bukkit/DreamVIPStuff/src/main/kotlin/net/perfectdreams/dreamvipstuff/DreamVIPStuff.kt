@@ -8,6 +8,7 @@ import net.perfectdreams.dreamcore.dao.User
 import net.perfectdreams.dreamcore.tables.Users
 import net.perfectdreams.dreamcore.utils.Databases
 import net.perfectdreams.dreamcore.utils.KotlinPlugin
+import net.perfectdreams.dreamcore.utils.LocationUtils
 import net.perfectdreams.dreamcore.utils.npc.SkinTexture
 import net.perfectdreams.dreamcore.utils.npc.SparklyNPC
 import net.perfectdreams.dreamcore.utils.registerEvents
@@ -252,23 +253,16 @@ class DreamVIPStuff : KotlinPlugin(), Listener {
 					}
 			}
 
-			val directionX = npcsLookAtLocation.x - slot.x
-			val directionY = npcsLookAtLocation.y - slot.y
-			val directionZ = npcsLookAtLocation.z - slot.z
-
-			// Calculate yaw (horizontal angle)
-			val yaw = Math.toDegrees(atan2(-directionX, directionZ))
-
-			// Calculate pitch (vertical angle)
-			val horizontalDistance = sqrt(directionX * directionX + directionZ * directionZ)
-			val pitch = Math.toDegrees(atan2(-directionY, horizontalDistance))
-
+			val yawAndPitch = LocationUtils.getYawAndPitchLookingAt(
+				slot,
+				npcsLookAtLocation
+			)
 			val sparklyNPC = DreamCore.INSTANCE.sparklyNPCManager.spawnFakePlayer(
 				this,
 				slot.clone()
 					.apply {
-						this.yaw = yaw.toFloat()
-						this.pitch = pitch.toFloat()
+						this.yaw = yawAndPitch.yaw
+						this.pitch = yawAndPitch.pitch
 					},
 				userData?.username ?: "???",
 				skinTextures = skinTextures

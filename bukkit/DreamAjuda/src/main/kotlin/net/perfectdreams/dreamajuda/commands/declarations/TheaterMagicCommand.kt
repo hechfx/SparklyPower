@@ -9,6 +9,7 @@ import com.sk89q.worldedit.world.World
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.perfectdreams.dreamajuda.DreamAjuda
+import net.perfectdreams.dreamajuda.theatermagic.AnimationAction
 import net.perfectdreams.dreamajuda.theatermagic.RecordingPlaybackContext
 import net.perfectdreams.dreamajuda.theatermagic.TheaterMagicStoredRecordingAnimation
 import net.perfectdreams.dreamcore.DreamCore
@@ -35,13 +36,34 @@ class TheaterMagicCommand(val m: DreamAjuda) : SparklyCommandDeclarationWrapper 
             executor = StopRecordingExecutor(m)
         }
 
+        subcommand(listOf("discard")) {
+            permissions = listOf("dreamajuda.theatermagic")
+            executor = DiscardRecordingExecutor(m)
+        }
+
         subcommand(listOf("playback")) {
             permissions = listOf("dreamajuda.theatermagic")
             executor = PlaybackRecordingExecutor(m)
         }
+
+        subcommand(listOf("teleporttostart")) {
+            permissions = listOf("dreamajuda.theatermagic")
+            executor = TeleportToStartRecordingExecutor(m)
+        }
+
+        subcommand(listOf("teleporttoend")) {
+            permissions = listOf("dreamajuda.theatermagic")
+            executor = TeleportToEndRecordingExecutor(m)
+        }
     }
 
     class StartRecordingExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
+        inner class Options : CommandOptions() {
+            val fileName = greedyString("file_name")
+        }
+
+        override val options = Options()
+
         override fun execute(context: CommandContext, args: CommandArguments) {
             val player = context.requirePlayer()
 
@@ -52,7 +74,7 @@ class TheaterMagicCommand(val m: DreamAjuda) : SparklyCommandDeclarationWrapper 
                 return
             }
 
-            val recording = m.theaterMagicManager.startRecording(player, weRegion)
+            val recording = m.theaterMagicManager.startRecording(player, weRegion, args[options.fileName])
             context.sendMessage("Gravação iniciada! Encene para o público!")
         }
 
@@ -78,26 +100,34 @@ class TheaterMagicCommand(val m: DreamAjuda) : SparklyCommandDeclarationWrapper 
     }
 
     class StopRecordingExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
-        inner class Options : CommandOptions() {
-            val fileName = greedyString("file_name")
-        }
-
-        override val options = Options()
-
         override fun execute(context: CommandContext, args: CommandArguments) {
             val player = context.requirePlayer()
 
             val recording = m.theaterMagicManager.getActiveRecording(player)
             if (recording != null) {
                 val recorded = recording.finish()
-                File(m.dataFolder, "${args[options.fileName]}.json")
+                File(m.dataFolder, "${recording.fileName}.json")
                     .writeText(
                         Json {
                             prettyPrint = true
                         }.encodeToString(recorded)
                     )
 
-                context.sendMessage("Gravação encerrada e salva com o nome ${args[options.fileName]}")
+                context.sendMessage("Gravação encerrada e salva com o nome ${recording.fileName}")
+            } else {
+                context.sendMessage("Você não tem uma gravação ativa!")
+            }
+        }
+    }
+
+    class DiscardRecordingExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            val player = context.requirePlayer()
+
+            val recording = m.theaterMagicManager.getActiveRecording(player)
+            if (recording != null) {
+                val recorded = recording.finish()
+                context.sendMessage("Gravação encerrada e descartada")
             } else {
                 context.sendMessage("Você não tem uma gravação ativa!")
             }
@@ -145,6 +175,62 @@ class TheaterMagicCommand(val m: DreamAjuda) : SparklyCommandDeclarationWrapper 
 
                 context.sendMessage("Gravação encerrada!")
             }
+        }
+    }
+
+    class TeleportToStartRecordingExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
+        inner class Options : CommandOptions() {
+            val fileName = greedyString("file_name")
+        }
+
+        override val options = Options()
+
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            val player = context.requirePlayer()
+
+            val recordingFile = File(m.dataFolder, "${args[options.fileName]}.json")
+            if (!recordingFile.exists()) {
+                context.sendMessage("Arquivo não existe!")
+                return
+            }
+
+            val recording = recordingFile.readText().let {
+                Json.decodeFromString<TheaterMagicStoredRecordingAnimation>(it)
+            }
+
+            val firstKeyframeWithMove = recording.keyframes.values.flatMap { it.actions }.filterIsInstance<AnimationAction.PlayerMovement>().first()
+
+            player.teleport(firstKeyframeWithMove.location.toLocation(player.world))
+
+            context.sendMessage("Teletransportado para o começo da gravação!")
+        }
+    }
+
+    class TeleportToEndRecordingExecutor(val m: DreamAjuda) : SparklyCommandExecutor() {
+        inner class Options : CommandOptions() {
+            val fileName = greedyString("file_name")
+        }
+
+        override val options = Options()
+
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            val player = context.requirePlayer()
+
+            val recordingFile = File(m.dataFolder, "${args[options.fileName]}.json")
+            if (!recordingFile.exists()) {
+                context.sendMessage("Arquivo não existe!")
+                return
+            }
+
+            val recording = recordingFile.readText().let {
+                Json.decodeFromString<TheaterMagicStoredRecordingAnimation>(it)
+            }
+
+            val firstKeyframeWithMove = recording.keyframes.values.flatMap { it.actions }.filterIsInstance<AnimationAction.PlayerMovement>().last()
+
+            player.teleport(firstKeyframeWithMove.location.toLocation(player.world))
+
+            context.sendMessage("Teletransportado para o fim da gravação!")
         }
     }
 }

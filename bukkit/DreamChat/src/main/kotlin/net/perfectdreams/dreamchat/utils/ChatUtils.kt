@@ -9,6 +9,7 @@ import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import net.perfectdreams.dreamchat.DreamChat
+import net.perfectdreams.dreamchat.events.PlayerReceivePlayerChatEvent
 import net.perfectdreams.dreamcore.network.DreamNetwork
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.adventure.append
@@ -130,11 +131,17 @@ object ChatUtils {
 				}
 		)
 
+		val isMainThread = Bukkit.isPrimaryThread()
 		Bukkit.getOnlinePlayers().forEach {
-			if (it != player)
-				it.sendMessage(forEveryone)
-			else
-				it.sendMessage(textComponent)
+			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
+			val isCancelled = receivePlayerChatEvent.callEvent()
+
+			if (!isCancelled) {
+				if (it != player)
+					it.sendMessage(forEveryone)
+				else
+					it.sendMessage(textComponent)
+			}
 		}
 	}
 
@@ -172,7 +179,15 @@ object ChatUtils {
 			previous = ChatColor.getLastColors(piece)
 		}
 
-		broadcast(textComponent)
+		val isMainThread = Bukkit.isPrimaryThread()
+		Bukkit.getOnlinePlayers().forEach {
+			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
+			val isCancelled = receivePlayerChatEvent.callEvent()
+
+			if (!isCancelled) {
+				it.sendMessage(textComponent)
+			}
+		}
 	}
 
 	fun sendResponseAsGabriela(player: Player, message: String) {
@@ -209,7 +224,15 @@ object ChatUtils {
 			previous = ChatColor.getLastColors(piece)
 		}
 
-		broadcast(textComponent)
+		val isMainThread = Bukkit.isPrimaryThread()
+		Bukkit.getOnlinePlayers().forEach {
+			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
+			val isCancelled = receivePlayerChatEvent.callEvent()
+
+			if (!isCancelled) {
+				it.sendMessage(textComponent)
+			}
+		}
 	}
 
 	fun sendResponseAsGessy(player: Player, message: String) {
@@ -246,7 +269,15 @@ object ChatUtils {
 			previous = ChatColor.getLastColors(piece)
 		}
 
-		broadcast(textComponent)
+		val isMainThread = Bukkit.isPrimaryThread()
+		Bukkit.getOnlinePlayers().forEach {
+			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
+			val isCancelled = receivePlayerChatEvent.callEvent()
+
+			if (!isCancelled) {
+				it.sendMessage(textComponent)
+			}
+		}
 	}
 
 	fun sendResponseAsLula(player: Player, message: String) {
@@ -281,7 +312,15 @@ object ChatUtils {
 			previous = ChatColor.getLastColors(piece)
 		}
 
-		broadcast(textComponent)
+		val isMainThread = Bukkit.isPrimaryThread()
+		Bukkit.getOnlinePlayers().forEach {
+			val receivePlayerChatEvent = PlayerReceivePlayerChatEvent(!isMainThread, PlayerReceivePlayerChatEvent.ChatSender.Bot, it)
+			val isCancelled = receivePlayerChatEvent.callEvent()
+
+			if (!isCancelled) {
+				it.sendMessage(textComponent)
+			}
+		}
 	}
 
 	fun isMensagemPolemica(message: String): Boolean {

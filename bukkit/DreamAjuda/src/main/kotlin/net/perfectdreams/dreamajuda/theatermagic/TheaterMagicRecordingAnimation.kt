@@ -22,6 +22,7 @@ class TheaterMagicRecordingAnimation(
     val minBlockSnapshot: Location,
     val maxBlockSnapshot: Location,
     val startedAtTick: Int,
+    val fileName: String,
 ) {
     companion object {
         private val PLAYER_EQUIPMENT_SLOTS = setOf(
@@ -65,6 +66,9 @@ class TheaterMagicRecordingAnimation(
 
                 measureTime {
                     for (entity in world.getEntitiesByClass(Player::class.java)) {
+                        val relTick = currentTick - startedAtTick
+                        entity.sendActionBar("RECORDING! Tick $relTick")
+
                         if (entity.location.isBetween(minBlockSnapshot, maxBlockSnapshot)) {
                             addAction(
                                 currentTick,

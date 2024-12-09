@@ -15,6 +15,7 @@ import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
+import org.enginehub.piston.inject.Key
 import kotlin.reflect.KProperty1
 
 class SparklyItem(val data: SparklyItemData) {
@@ -33,6 +34,11 @@ class SparklyItem(val data: SparklyItemData) {
                 val customModelData = getAttributeCheckParents(SparklyItemData::customModelData)
                 if (customModelData != null)
                     setCustomModelData(customModelData)
+
+                val customItemModel = getAttributeCheckParents(SparklyItemData::itemModel)
+                if (customItemModel != null) {
+                    itemModel = NamespacedKey.fromString(customItemModel)
+                }
 
                 val rawItemName = getAttributeCheckParents(SparklyItemData::itemName)
                 if (rawItemName != null) {

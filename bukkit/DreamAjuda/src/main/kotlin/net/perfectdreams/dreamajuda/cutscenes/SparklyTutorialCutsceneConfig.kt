@@ -1,35 +1,57 @@
 package net.perfectdreams.dreamajuda.cutscenes
 
 import kotlinx.serialization.Serializable
-import org.bukkit.Location
-import org.bukkit.World
+import net.perfectdreams.dreamcore.serializable.SerializedBlockPosition
+import net.perfectdreams.dreamcore.serializable.SerializedLocation
+import net.perfectdreams.dreamcore.serializable.SerializedWorldLocation
 
 @Serializable
 data class SparklyTutorialCutsceneConfig(
-    val playerMetroChairSittingLocation: Location,
-    val boringOfficePlayerChairSittingLocation: Location,
-    val boringOfficeCameraStartLocation: Location,
-    val boringOfficeCameraFinishLocation: Location,
-    val boringOfficeVillagersLocations: List<Location>,
-    val metroSoundSourceLocation: Location,
+    val playerCutsceneFinishLocation: SerializedLocation,
+    val playerMetroChairSittingLocation: SerializedLocation,
+    val boringOfficePlayerChairSittingLocation: SerializedLocation,
+    val boringOfficeCameraStartLocation: SerializedLocation,
+    val boringOfficeCameraFinishLocation: SerializedLocation,
+    val boringOfficeVillagersLocations: List<SerializedLocation>,
+    val metroSoundSourceLocation: SerializedLocation,
     val metroSoundVolume: Float,
     val metroSoundKey: String,
-    val metroNextStationSignLocations: List<Location>,
+    val metroNextStationSignLocations: List<SerializedWorldLocation>,
     val metroNextStationSignScale: Float,
-    val metroNextStationCameraLocation: Location,
+    val metroNextStationCameraLocation: SerializedLocation,
     val metroNextStationText: String,
     val metroNextStationTextDefault: String,
-    val lorittaMessageYouAlwaysDreamedOfCameraStartLocation: Location,
-    val lorittaMessageYouAlwaysDreamedOfCameraFinishLocation: Location,
+    val lorittaMessageYouAlwaysDreamedOfCameraStartLocation: SerializedLocation,
+    val lorittaMessageYouAlwaysDreamedOfCameraFinishLocation: SerializedLocation,
+    val leaveYourMark: LeaveYourMarkConfig,
+    val lifetimeFriends: LifetimeFriends,
+    val blackWalls: List<BlackWalls>,
+    val metroDoors: List<SerializedLocation>
 ) {
     @Serializable
-    data class Location(
-        val x: Double,
-        val y: Double,
-        val z: Double,
-        val yaw: Float,
-        val pitch: Float
+    data class LeaveYourMarkConfig(
+        val playerChairSittingLocation: SerializedLocation,
+        val cameraStartLocation: SerializedLocation,
+        val cameraFinishLocation: SerializedLocation,
+    )
+
+    @Serializable
+    data class LifetimeFriends(
+        val cameraLocation: SerializedLocation,
+        val skin2: SkinTexture?,
+        val skin3: SkinTexture?,
+        val skin4: SkinTexture?
     ) {
-        fun toBukkitLocation(world: World) = org.bukkit.Location(world, x, y, z, yaw, pitch)
+        @Serializable
+        data class SkinTexture(
+            val value: String,
+            val signature: String
+        )
     }
+
+    @Serializable
+    data class BlackWalls(
+        val area1: SerializedBlockPosition,
+        val area2: SerializedBlockPosition
+    )
 }

@@ -1,5 +1,6 @@
 package net.perfectdreams.dreamcore.utils
 
+import io.papermc.paper.math.Position
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.World
@@ -7,7 +8,9 @@ import org.bukkit.block.BlockFace
 import org.bukkit.entity.Entity
 import java.util.ArrayList
 import kotlin.Comparator
+import kotlin.math.atan2
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 object LocationUtils {
 	val axis = arrayOf(BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH)
@@ -25,9 +28,9 @@ object LocationUtils {
 			}
 		}
 		pos.sortWith(
-				Comparator {
+			Comparator {
 					a, b -> a.x * a.x + a.y * a.y + a.z * a.z - (b.x * b.x + b.y * b.y + b.z * b.z)
-				}
+			}
 		)
 
 		VOLUME = pos.toTypedArray()
@@ -68,31 +71,54 @@ object LocationUtils {
 		return loc
 	}
 
-	fun faceEntity(fromLocation: Location, at: Entity): Location {
-		return if (fromLocation.world !== at.world) {
-			fromLocation
-		} else faceLocation(fromLocation, at.location)
+	/**
+	 * Gets a location based on [originLocation] looking at [lookAtLocation]
+	 */
+	fun getLocationLookingAt(originLocation: Location, lookAtLocation: Location): Location {
+		val yawAndPitch = getYawAndPitchLookingAt(originLocation, lookAtLocation)
+		return originLocation.clone()
+			.apply {
+				this.yaw = yawAndPitch.yaw
+				this.pitch = yawAndPitch.pitch
+			}
 	}
 
-	fun faceLocation(fromLocation: Location, to: Location): Location {
-		if (fromLocation.world !== to.world) {
-			return fromLocation
-		}
-		val xDiff = to.x - fromLocation.x
-		val yDiff = to.y - fromLocation.y
-		val zDiff = to.z - fromLocation.z
-		val distanceXZ = Math.sqrt(xDiff * xDiff + zDiff * zDiff)
-		val distanceY = Math.sqrt(distanceXZ * distanceXZ + yDiff * yDiff)
-		var yaw = Math.toDegrees(Math.acos(xDiff / distanceXZ)) - 180.0
-		val pitch = Math.toDegrees(Math.acos(yDiff / distanceY)) - 90.0
-		if (zDiff < 0.0) {
-			yaw += Math.abs(yaw) * 2.0
-		}
-		yaw += 90.0
-		fromLocation.pitch = pitch.toFloat()
-		fromLocation.yaw = yaw.toFloat()
-		return fromLocation
+	/**
+	 * Gets the yaw and pitch required to make [originLocation] look at [lookAtLocation]
+	 */
+	fun getYawAndPitchLookingAt(originLocation: Location, lookAtLocation: Location): YawAndPitch {
+		return getYawAndPitchLookingAt(
+			Position.fine(originLocation),
+			Position.fine(lookAtLocation),
+		)
 	}
+
+	/**
+	 * Gets the yaw and pitch required to make [originLocation] look at [lookAtLocation]
+	 */
+	fun getYawAndPitchLookingAt(originPosition: Position, lookAtPosition: Position): YawAndPitch {
+		// We don't use lookAt because that only works if the mob does not have an AI
+		val directionX = lookAtPosition.x() - originPosition.x()
+		val directionY = lookAtPosition.y() - originPosition.y()
+		val directionZ = lookAtPosition.z() - originPosition.z()
+
+		// Calculate yaw (horizontal angle)
+		val yaw = Math.toDegrees(atan2(-directionX, directionZ))
+
+		// Calculate pitch (vertical angle)
+		val horizontalDistance = sqrt(directionX * directionX + directionZ * directionZ)
+		val pitch = Math.toDegrees(atan2(-directionY, horizontalDistance))
+
+		return YawAndPitch(
+			yaw.toFloat(),
+			pitch.toFloat()
+		)
+	}
+
+	data class YawAndPitch(
+		val yaw: Float,
+		val pitch: Float
+	)
 
 	fun isLocationBetweenLocations(location: Location, loc1: Location, loc2: Location): Boolean {
 		if (loc1.world != loc2.world) // If both locations are in different worlds, then the target location will never be between them

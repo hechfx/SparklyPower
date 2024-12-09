@@ -1,10 +1,12 @@
 package net.perfectdreams.dreamcore.utils
 
 import com.comphenix.protocol.wrappers.BlockPosition
+import io.papermc.paper.math.Position
 import net.minecraft.core.BlockPos
 import net.perfectdreams.dreamcore.utils.BlockUtils.getDrops
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.block.Sign
 import org.bukkit.craftbukkit.CraftWorld
@@ -82,6 +84,29 @@ object BlockUtils {
 			for (z in bottomBlockZ..topBlockZ) {
 				for (y in bottomBlockY..topBlockY) {
 					val block = loc1.world.getBlockAt(x, y, z)
+					blocks.add(block)
+				}
+			}
+		}
+		return blocks
+	}
+
+	fun getBlocksFromTwoPositions(world: World, loc1: io.papermc.paper.math.Position, loc2: io.papermc.paper.math.Position): List<Block> {
+		val blocks = ArrayList<Block>()
+
+		val topBlockX = if (loc1.blockX() < loc2.blockX()) loc2.blockX() else loc1.blockX()
+		val bottomBlockX = if (loc1.blockX() > loc2.blockX()) loc2.blockX() else loc1.blockX()
+
+		val topBlockY = if (loc1.blockY() < loc2.blockY()) loc2.blockY() else loc1.blockY()
+		val bottomBlockY = if (loc1.blockY() > loc2.blockY()) loc2.blockY() else loc1.blockY()
+
+		val topBlockZ = if (loc1.blockZ() < loc2.blockZ()) loc2.blockZ() else loc1.blockZ()
+		val bottomBlockZ = if (loc1.blockZ() > loc2.blockZ()) loc2.blockZ() else loc1.blockZ()
+
+		for (x in bottomBlockX..topBlockX) {
+			for (z in bottomBlockZ..topBlockZ) {
+				for (y in bottomBlockY..topBlockY) {
+					val block = world.getBlockAt(x, y, z)
 					blocks.add(block)
 				}
 			}
