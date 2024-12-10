@@ -11,7 +11,6 @@ import net.perfectdreams.dreamcore.commands.declarations.MeninaCommand
 import net.perfectdreams.dreamcore.commands.declarations.MeninoCommand
 import net.perfectdreams.dreamcore.dao.User
 import net.perfectdreams.dreamcore.eventmanager.DreamEventManager
-import net.perfectdreams.dreamcore.listeners.EntityListener
 import net.perfectdreams.dreamcore.listeners.PlayerLoginListener
 import net.perfectdreams.dreamcore.listeners.SkinsListener
 import net.perfectdreams.dreamcore.listeners.SocketListener
@@ -101,7 +100,6 @@ class DreamCore : KotlinPlugin() {
 		if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null)
 			SignGUIUtils.registerSignGUIListener()
 
-		Bukkit.getPluginManager().registerEvents(EntityListener(), this)
 		Bukkit.getPluginManager().registerEvents(DreamMenuListener(), this)
 
 		// Iniciar funções do Vault dentro de um try ... catch
@@ -160,7 +158,6 @@ class DreamCore : KotlinPlugin() {
 			}
 		}
 
-		ArmorStandHologram.loadArmorStandsIdsMarkedForRemoval()
 		dreamEventManager.startEventsTask()
 		val sparkPlugin = Bukkit.getPluginManager().getPlugin("spark") as BukkitSparkPlugin?
 		if (sparkPlugin != null) {
