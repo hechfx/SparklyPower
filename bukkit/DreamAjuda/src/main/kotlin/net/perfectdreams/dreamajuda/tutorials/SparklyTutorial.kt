@@ -905,7 +905,7 @@ sealed class SparklyTutorial(val playerTutorial: PlayerTutorial) {
                             append(" terminou o tutorial")
                         }
                         appendTextComponent {
-                            append(" terminou o tutorial! Seção do Tutorial que o Player estava: ${this@ProtectTerrain::class.simpleName}")
+                            append("! Seção do Tutorial que o Player estava: ${this@ProtectTerrain::class.simpleName}")
                         }
                     }
                 )
