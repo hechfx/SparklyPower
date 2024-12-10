@@ -22,10 +22,8 @@ class HatExecutor : SparklyCommandExecutor() {
 
         val type = item.type
 
-        var allowed = false
-
-        if (player.hasPermission("dreammini.hat")) {
-            allowed = true
+        val allowed = if (player.hasPermission("dreammini.hat")) {
+            true
         } else {
             SparklyItemsRegistry.canEquipAsHat(item)
         }
