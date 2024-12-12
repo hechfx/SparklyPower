@@ -38,7 +38,7 @@ class DreamHologramsSetTextContentExecutor(val m: DreamHolograms)  : SparklyComm
 
                 hologram.updateHologram()
 
-                m.saveHologramsAsync()
+                m.saveHologramAsync(hologram)
 
                 context.sendMessage {
                     color(NamedTextColor.GREEN)

@@ -35,7 +35,7 @@ class DreamHologramsLookAtMeExecutor(val m: DreamHolograms)  : SparklyCommandExe
         )
         hologram.updateHologram()
 
-        m.saveHologramsAsync()
+        m.saveHologramAsync(hologram)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

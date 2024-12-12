@@ -62,7 +62,7 @@ class DreamHologramsAlignExecutor(val m: DreamHolograms)  : SparklyCommandExecut
         hologramToAlignData.data.location = newLocation
         hologramToAlignData.updateHologram()
 
-        m.saveHologramsAsync()
+        m.saveHologramAsync(hologramToAlignData)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

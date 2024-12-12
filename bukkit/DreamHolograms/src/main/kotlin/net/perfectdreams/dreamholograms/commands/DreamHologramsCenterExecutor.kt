@@ -31,7 +31,7 @@ class DreamHologramsCenterExecutor(val m: DreamHolograms)  : SparklyCommandExecu
         )
         hologramToMoveData.updateHologram()
 
-        m.saveHologramsAsync()
+        m.saveHologramAsync(hologramToMoveData)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

@@ -47,7 +47,7 @@ class DreamHologramsTransformationScaleExecutor(val m: DreamHolograms)  : Sparkl
 
                 hologramData.updateHologram()
 
-                m.saveHologramsAsync()
+                m.saveHologramAsync(hologramData)
 
                 context.sendMessage {
                     color(NamedTextColor.GREEN)

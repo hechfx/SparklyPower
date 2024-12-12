@@ -36,9 +36,9 @@ class DreamHologramsCreateTextExecutor(val m: DreamHolograms)  : SparklyCommandE
             return
         }
 
-        m.createHologram(
+        val hologram = m.createHologram(
+            hologramName,
             StoredHologram(
-                hologramName,
                 SerializedWorldLocation(
                     player.location.world.name,
                     player.location.x,
@@ -64,7 +64,7 @@ class DreamHologramsCreateTextExecutor(val m: DreamHolograms)  : SparklyCommandE
             )
         )
 
-        m.saveHologramsAsync()
+        m.saveHologramAsync(hologram)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

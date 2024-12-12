@@ -10,7 +10,9 @@ import net.perfectdreams.dreamholograms.DreamHolograms
 
 class DreamHologramsSaveExecutor(val m: DreamHolograms)  : SparklyCommandExecutor() {
     override fun execute(context: CommandContext, args: CommandArguments) {
-        m.saveHolograms()
+        for (hologram in m.holograms.values) {
+            m.saveHologramAsync(hologram)
+        }
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

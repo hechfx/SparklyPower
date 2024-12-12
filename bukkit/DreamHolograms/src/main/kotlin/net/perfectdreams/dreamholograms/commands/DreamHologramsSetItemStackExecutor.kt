@@ -46,7 +46,7 @@ class DreamHologramsSetItemStackExecutor(val m: DreamHolograms)  : SparklyComman
 
                 hologram.updateHologram()
 
-                m.saveHologramsAsync()
+                m.saveHologramAsync(hologram)
 
                 context.sendMessage {
                     color(NamedTextColor.GREEN)

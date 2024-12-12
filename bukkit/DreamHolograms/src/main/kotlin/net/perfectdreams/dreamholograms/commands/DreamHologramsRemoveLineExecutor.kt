@@ -33,7 +33,7 @@ class DreamHologramsRemoveLineExecutor(val m: DreamHolograms)  : SparklyCommandE
 
         hologram.updateHologram()
 
-        m.saveHologramsAsync()
+        m.saveHologramAsync(hologram)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

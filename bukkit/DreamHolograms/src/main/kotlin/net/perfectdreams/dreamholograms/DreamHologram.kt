@@ -1,5 +1,6 @@
 package net.perfectdreams.dreamholograms
 
+import kotlinx.serialization.encodeToString
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.perfectdreams.dreamholograms.data.HologramLine
@@ -11,10 +12,12 @@ import org.bukkit.entity.Display
 import org.bukkit.entity.TextDisplay
 import org.bukkit.inventory.ItemStack
 import org.joml.Vector3f
+import java.io.File
 import java.util.*
 
 class DreamHologram(
     val m: DreamHolograms,
+    val id: String,
     val data: StoredHologram
 ) {
     private val hologramEntitiesUniqueIds = mutableListOf<UUID>()
@@ -62,18 +65,18 @@ class DreamHologram(
         // Don't attempt to spawn hologram if the world is not loaded yet
         val world = Bukkit.getWorld(data.location.worldName)
         if (world == null) {
-            m.logger.info("Not spawning hologram ${data.id} because the world does not exist!")
+            m.logger.info("Not spawning hologram ${id} because the world does not exist!")
             return
         }
 
         val location = data.location.toLocation(world)
 
         if (!location.isChunkLoaded) {
-            m.logger.info("Not spawning hologram ${data.id} because the chunk that the hologram is within is not loaded!")
+            m.logger.info("Not spawning hologram $id because the chunk that the hologram is within is not loaded!")
             return
         }
 
-        m.logger.info("Spawning hologram ${data.id}...")
+        m.logger.info("Spawning hologram ${id}...")
 
         val chunk = world.getChunkAt(location)
         chunk.isLoaded

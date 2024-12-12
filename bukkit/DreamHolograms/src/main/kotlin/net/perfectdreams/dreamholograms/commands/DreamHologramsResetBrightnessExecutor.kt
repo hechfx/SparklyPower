@@ -40,7 +40,7 @@ class DreamHologramsResetBrightnessExecutor(val m: DreamHolograms)  : SparklyCom
 
                 hologramData.updateHologram()
 
-                m.saveHologramsAsync()
+                m.saveHologramAsync(hologramData)
 
                 context.sendMessage {
                     color(NamedTextColor.GREEN)

@@ -49,7 +49,7 @@ class DreamHologramsAddTextExecutor(val m: DreamHolograms)  : SparklyCommandExec
 
         hologram.updateHologram()
 
-        m.saveHologramsAsync()
+        m.saveHologramAsync(hologram)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

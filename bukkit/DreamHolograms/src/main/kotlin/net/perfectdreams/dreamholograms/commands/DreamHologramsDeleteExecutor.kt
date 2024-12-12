@@ -29,7 +29,7 @@ class DreamHologramsDeleteExecutor(val m: DreamHolograms)  : SparklyCommandExecu
         hologram.removeHologram()
         m.holograms.remove(hologramName, hologram)
 
-        m.saveHologramsAsync()
+        m.deleteHologramAsync(hologram)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)

@@ -1,20 +1,17 @@
 package net.perfectdreams.dreamholograms.commands
 
 import net.kyori.adventure.text.format.NamedTextColor
-import net.perfectdreams.dreamcore.utils.LocationReference
 import net.perfectdreams.dreamcore.utils.commands.context.CommandArguments
 import net.perfectdreams.dreamcore.utils.commands.context.CommandContext
 import net.perfectdreams.dreamcore.utils.commands.executors.SparklyCommandExecutor
 import net.perfectdreams.dreamcore.utils.commands.options.CommandOptions
-import net.perfectdreams.dreamcore.utils.displays.DisplayBlock
 import net.perfectdreams.dreamholograms.DreamHologram
 import net.perfectdreams.dreamholograms.DreamHolograms
 import net.perfectdreams.dreamholograms.data.HologramLine
-import org.bukkit.util.Transformation
-import org.joml.Matrix4f
-import org.joml.Vector3f
+import net.perfectdreams.dreamholograms.data.StoredHologram
+import java.awt.Color
 
-class DreamHologramsTransformationResetExecutor(val m: DreamHolograms)  : SparklyCommandExecutor() {
+class DreamHologramsBackgroundResetExecutor(val m: DreamHolograms) : SparklyCommandExecutor() {
     inner class Options : CommandOptions() {
         val hologramName = word("hologram_name", m.hologramNameAutocomplete)
         val displayTextLine = word("display_text_line")
@@ -34,9 +31,9 @@ class DreamHologramsTransformationResetExecutor(val m: DreamHolograms)  : Sparkl
         }
 
         when (val result = hologramData.getHologramLines<HologramLine.HologramText>(displayTextLine)) {
-            is DreamHologram.GetByLineResult.Success -> {
+            is DreamHologram.GetByLineResult.Success<HologramLine.HologramText> -> {
                 for (line in result.lines) {
-                    line.transformation = Matrix4f()
+                    line.backgroundColor = StoredHologram.DEFAULT_BACKGROUND_COLOR
                 }
 
                 hologramData.updateHologram()

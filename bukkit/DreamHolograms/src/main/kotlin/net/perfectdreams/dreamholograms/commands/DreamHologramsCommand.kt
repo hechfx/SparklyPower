@@ -1,12 +1,10 @@
 package net.perfectdreams.dreamholograms.commands
 
 import net.kyori.adventure.text.format.NamedTextColor
-import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.adventure.append
 import net.perfectdreams.dreamcore.utils.commands.context.CommandContext
 import net.perfectdreams.dreamcore.utils.commands.declarations.SparklyCommandDeclarationWrapper
 import net.perfectdreams.dreamcore.utils.commands.declarations.sparklyCommand
-import net.perfectdreams.dreamcore.utils.commands.options.SuggestsBlock
 import net.perfectdreams.dreamholograms.DreamHolograms
 import net.perfectdreams.dreamholograms.data.HologramLine
 
@@ -120,8 +118,18 @@ class DreamHologramsCommand(val m: DreamHolograms) : SparklyCommandDeclarationWr
                         executor = DreamHologramsBillboardExecutor(m)
                     }
 
-                    subcommand(listOf("backgroundcolor")) {
-                        executor = DreamHologramsDisplayBackgroundExecutor(m)
+                    subcommand(listOf("background")) {
+                        subcommand(listOf("disable")) {
+                            executor = DreamHologramsBackgroundDisableExecutor(m)
+                        }
+
+                        subcommand(listOf("set")) {
+                            executor = DreamHologramsBackgroundColorExecutor(m)
+                        }
+
+                        subcommand(listOf("reset")) {
+                            executor = DreamHologramsBackgroundColorExecutor(m)
+                        }
                     }
 
                     subcommand(listOf("textshadow")) {

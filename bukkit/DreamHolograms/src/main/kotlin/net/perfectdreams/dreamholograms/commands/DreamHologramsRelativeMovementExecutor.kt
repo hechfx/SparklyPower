@@ -39,7 +39,7 @@ class DreamHologramsRelativeMovementExecutor(val m: DreamHolograms)  : SparklyCo
         )
         hologramToMoveData.updateHologram()
 
-        m.saveHologramsAsync()
+        m.saveHologramAsync(hologramToMoveData)
 
         context.sendMessage {
             color(NamedTextColor.GREEN)
