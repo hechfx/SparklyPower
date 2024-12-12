@@ -1,13 +1,12 @@
 package net.perfectdreams.dreamholograms
 
+import com.charleskorn.kaml.SequenceStyle
 import com.charleskorn.kaml.Yaml
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.runBlocking
+import com.charleskorn.kaml.YamlConfiguration
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.KotlinPlugin
 import net.perfectdreams.dreamcore.utils.commands.options.SuggestsBlock
 import net.perfectdreams.dreamcore.utils.registerEvents
@@ -31,6 +30,12 @@ class DreamHolograms : KotlinPlugin(), Listener {
 			builder.suggest(it.value.data.id)
 		}
 	}
+	val yaml = Yaml(
+		configuration = YamlConfiguration(
+			encodeDefaults = false,
+			sequenceStyle = SequenceStyle.Block
+		)
+	)
 
 	override fun softEnable() {
 		registerCommand(DreamHologramsCommand(this))
@@ -71,7 +76,7 @@ class DreamHolograms : KotlinPlugin(), Listener {
 		}
 
 		try {
-			val holograms = Yaml.default.decodeFromString<List<StoredHologram>>(hologramsFile.readText())
+			val holograms = yaml.decodeFromString<List<StoredHologram>>(hologramsFile.readText())
 			holograms.forEach {
 				createHologram(it)
 			}
@@ -86,7 +91,7 @@ class DreamHolograms : KotlinPlugin(), Listener {
 		logger.info("Saving holograms...")
 		dataFolder.mkdirs()
 		saveFileSafely(
-			Yaml.default.encodeToString(this.holograms.values.map { it.data }),
+			yaml.encodeToString(this.holograms.values.map { it.data }),
 			hologramsFile
 		)
 		logger.info("Holograms saved successfully!")
