@@ -14,7 +14,9 @@ import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.adventure.textComponent
 import net.perfectdreams.dreamcore.utils.extensions.meta
 import net.perfectdreams.dreamcore.utils.extensions.toItemStack
+import net.perfectdreams.dreamcustomitems.DreamCustomItems
 import net.perfectdreams.dreamcustomitems.items.SparklyItemsRegistry
+import net.perfectdreams.dreamcustomitems.utils.CustomCraftingRecipe
 import net.perfectdreams.dreamcustomitems.utils.CustomItems
 import net.perfectdreams.dreamjetpack.DreamJetpack
 import org.bukkit.JukeboxSong
@@ -47,11 +49,18 @@ class DreamCaixaSecreta : KotlinPlugin() {
 	override fun softEnable() {
 		super.softEnable()
 
-		addRecipe(
-			COMBINE_BOXES_KEY,
-			ShapelessRecipe(
-				COMBINE_BOXES_KEY, Material.CHEST.toItemStack()
-			).addIngredient(2, Material.CHEST)
+		DreamCustomItems.registerCustomRecipe(
+			CustomCraftingRecipe(
+				this,
+				CustomCraftingRecipe.RUBY_REMAP,
+				true,
+				addRecipe(
+					COMBINE_BOXES_KEY,
+					ShapelessRecipe(
+						COMBINE_BOXES_KEY, Material.CHEST.toItemStack()
+					).addIngredient(2, Material.CHEST)
+				)
+			)
 		)
 
 		itemReceived = NBSDecoder.parse(File(dataFolder, "item-received.nbs"))
