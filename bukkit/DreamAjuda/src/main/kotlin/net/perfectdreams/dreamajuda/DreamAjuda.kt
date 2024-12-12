@@ -50,7 +50,7 @@ import kotlin.reflect.full.primaryConstructor
 
 class DreamAjuda : KotlinPlugin(), Listener {
 	companion object {
-		private val RULES_VERSION = SparklyNamespacedKey("rules_version", PersistentDataType.INTEGER)
+		val RULES_VERSION = SparklyNamespacedKey("rules_version", PersistentDataType.INTEGER)
 		val IS_RULES_SIGN = SparklyNamespacedBooleanKey("is_rules_sign")
 	}
 

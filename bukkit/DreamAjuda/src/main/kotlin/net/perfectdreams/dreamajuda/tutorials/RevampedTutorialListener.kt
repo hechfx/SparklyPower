@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.minecraft.network.protocol.game.*
 import net.perfectdreams.dreamajuda.DreamAjuda
+import net.perfectdreams.dreamajuda.DreamAjuda.Companion.RULES_VERSION
 import net.perfectdreams.dreamchat.events.PlayerReceivePlayerChatEvent
 import net.perfectdreams.dreamcore.utils.adventure.appendCommand
 import net.perfectdreams.dreamcore.utils.adventure.appendTextComponent
@@ -66,6 +67,14 @@ class RevampedTutorialListener(val m: DreamAjuda) : Listener {
         // Don't receive chat messages if we are in a tutorial
         if (activeTutorial != null) {
             e.isCancelled = true
+        }
+
+        val playerRulesVersion = e.receiver.persistentDataContainer.get(RULES_VERSION)
+
+        if (playerRulesVersion != m.config.getInt("rules-version")) {
+            if (e.receiver.location.isWithinRegion("rules_island")) {
+                e.isCancelled = true
+            }
         }
     }
 
