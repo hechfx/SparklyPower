@@ -101,13 +101,15 @@ include(":bukkit:DreamSonecas")
 include(":bukkit:DreamSeamlessWorlds")
 include(":bukkit:DreamInventorySnapshots")
 include(":bukkit:DreamBlockParty")
+include(":bukkit:DreamHolograms")
+
 // ===[ BUNGEE ]===
 // include(":bungee:DreamCoreBungee")
 // include(":bungee:DreamMOTDBungee")
 // include(":bungee:DreamNetworkBans")
 
 // ===[ VELOCITY ]===
-include(":velocity:SparklyNeonVelocity")
+// include(":velocity:SparklyNeonVelocity")
 
 // ===[ PANTUFA ]===
 include(":pantufa")

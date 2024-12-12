@@ -18,8 +18,6 @@ import net.perfectdreams.dreamcore.network.socket.SocketServer
 import net.perfectdreams.dreamcore.tables.*
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.displays.SparklyDisplayManager
-import net.perfectdreams.dreamcore.utils.displays.user.SparklyDisplayCommand
-import net.perfectdreams.dreamcore.utils.displays.user.SparklyUserDisplayManager
 import net.perfectdreams.dreamcore.utils.extensions.*
 import net.perfectdreams.dreamcore.utils.npc.SparklyNPCManager
 import net.perfectdreams.dreamcore.utils.npc.user.SparklyNPCCommand
@@ -59,7 +57,6 @@ class DreamCore : KotlinPlugin() {
 	val sparklyNPCManager = SparklyNPCManager(this)
 	val sparklyUserNPCManager = SparklyUserNPCManager(this)
 	val sparklyDisplayManager = SparklyDisplayManager(this)
-	val sparklyUserDisplayManager = SparklyUserDisplayManager(this)
 	val scoreboardManager = SparklyScoreboardManager(this)
 	val skinUtils = SkinUtils(this)
 	val rpc = RPCUtils(this)
@@ -137,8 +134,6 @@ class DreamCore : KotlinPlugin() {
 
 		// SparklyDisplays
 		sparklyDisplayManager.start()
-		sparklyUserDisplayManager.start()
-		registerCommand(SparklyDisplayCommand(this))
 
 		// SparklyPacketEvents
 		Bukkit.getPluginManager().registerEvents(PacketPipelineRegisterListener(), this)
