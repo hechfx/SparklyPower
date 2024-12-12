@@ -46,12 +46,6 @@ class SparklyDisplayListener(val m: SparklyDisplayManager) : Listener {
 
     @EventHandler
     fun onDisable(event: PluginDisableEvent) {
-        // Here's the thing: If we are disabling OURSELVES, we NEED to save the data BEFORE we remove the displays from the map
-        // println("plugin: ${event.plugin} ${m.m} ${event.plugin == m.m}")
-        if (m.m.sparklyUserDisplayManager.configHasBeenLoaded && event.plugin == m.m) {
-            m.m.sparklyUserDisplayManager.save()
-        }
-
         m.sparklyDisplays.forEach { (id, data) ->
             if (data.owner == event.plugin) {
                 // Delete all displays when the plugin is disabled

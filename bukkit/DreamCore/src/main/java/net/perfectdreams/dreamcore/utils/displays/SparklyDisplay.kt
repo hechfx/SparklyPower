@@ -22,10 +22,6 @@ class SparklyDisplay(
 ) {
     val blocks = mutableListOf<DisplayBlock>()
 
-    fun getSparklyDisplayUserId(): String? = m.m.sparklyUserDisplayManager.createdTextDisplays.values.firstOrNull {
-        it.sparklyDisplay == this@SparklyDisplay
-    }?.id
-
     fun getOwnerOfThisEntity(entity: Entity): DisplayBlock? {
         return blocks.firstOrNull { it.areWeTheOwnerOfThisEntity(entity) }
     }
@@ -79,7 +75,7 @@ class SparklyDisplay(
         // Now THIS TIME we need to create a UUID for it
         val location = locationReference.toBukkit()
         if (!location.isWorldLoaded) {
-            m.m.logger.warning("Tried spawning display block for SparklyDisplay $uniqueId (${getSparklyDisplayUserId()}), but the world isn't loaded! Ignoring...")
+            m.m.logger.warning("Tried spawning display block for SparklyDisplay $uniqueId, but the world isn't loaded! Ignoring...")
             return null
         }
 
@@ -114,7 +110,7 @@ class SparklyDisplay(
     private fun spawnItemDropDisplayBlock(itemStack: ItemStack): Pair<Entity?, Entity?> {
         val location = locationReference.toBukkit()
         if (!location.isWorldLoaded) {
-            m.m.logger.warning("Tried spawning item drop display block for SparklyDisplay $uniqueId (${getSparklyDisplayUserId()}), but the world isn't loaded! Ignoring...")
+            m.m.logger.warning("Tried spawning item drop display block for SparklyDisplay $uniqueId, but the world isn't loaded! Ignoring...")
             return Pair(null, null)
         }
 
@@ -150,7 +146,7 @@ class SparklyDisplay(
     fun synchronizeBlocks() {
         val location = locationReference.toBukkit()
         if (location.world == null) {
-            m.m.logger.info("Not synchronizing SparklyDisplay ${uniqueId} (${getSparklyDisplayUserId()}) because the location world is null!")
+            m.m.logger.info("Not synchronizing SparklyDisplay ${uniqueId} because the location world is null!")
             return
         }
 
