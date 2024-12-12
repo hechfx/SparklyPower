@@ -65,6 +65,11 @@ class DreamHolograms : KotlinPlugin(), Listener {
 	}
 
 	fun loadHolograms() {
+		if (!hologramsFile.exists()) {
+			this.successfullyLoaded = true
+			return
+		}
+
 		try {
 			val holograms = Yaml.default.decodeFromString<List<StoredHologram>>(hologramsFile.readText())
 			holograms.forEach {
@@ -79,6 +84,7 @@ class DreamHolograms : KotlinPlugin(), Listener {
 
 	fun saveHolograms() {
 		logger.info("Saving holograms...")
+		dataFolder.mkdirs()
 		saveFileSafely(
 			Yaml.default.encodeToString(this.holograms.values.map { it.data }),
 			hologramsFile
