@@ -49,7 +49,7 @@ class DreamTrails : KotlinPlugin() {
 		if (itemStack == null)
 			return
 
-		if (itemStack.hasItemMeta())
+		if (!itemStack.hasItemMeta())
 			return
 
 		val type = itemStack.type
