@@ -167,17 +167,6 @@ class PesadelosCommand : SlashCommandDeclarationWrapper {
                 return
             }
 
-            if (quantity.toDouble().isInfinite() || quantity.toDouble().isNaN()) {
-                context.reply(false) {
-                    styled(
-                        "Número inválido!",
-                        Constants.ERROR
-                    )
-                }
-
-                return
-            }
-
             val minecraftAccount = context.retrieveConnectedMinecraftAccountOrFail()
 
             doTransfer(context, minecraftAccount, playerName, quantity, false)
