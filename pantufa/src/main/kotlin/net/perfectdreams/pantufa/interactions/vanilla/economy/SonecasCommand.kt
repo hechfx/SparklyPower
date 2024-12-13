@@ -7,7 +7,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder
-import net.dv8tion.jda.api.utils.messages.MessageEditData
 import net.perfectdreams.loritta.common.commands.CommandCategory
 import net.perfectdreams.loritta.morenitta.interactions.UnleashedContext
 import net.perfectdreams.loritta.morenitta.interactions.commands.*
@@ -18,23 +17,27 @@ import net.perfectdreams.pantufa.api.commands.exceptions.SilentCommandException
 import net.perfectdreams.pantufa.network.Databases
 import net.perfectdreams.pantufa.tables.PlayerSonecas
 import net.perfectdreams.pantufa.utils.Constants
-import net.perfectdreams.pantufa.utils.formatToTwoDecimalPlaces
 import net.perfectdreams.pantufa.api.commands.styled
 import net.perfectdreams.pantufa.api.minecraft.MinecraftAccountInfo
-import net.perfectdreams.pantufa.dao.DiscordAccount
 import net.perfectdreams.pantufa.tables.Users
 import net.perfectdreams.pantufa.utils.Emotes
+import net.perfectdreams.pantufa.utils.extensions.convertShortenedNumberToDouble
 import net.sparklypower.rpc.TransferSonecasRequest
 import net.sparklypower.rpc.TransferSonecasResponse
-import net.sparklypower.rpc.UpdatePlayerSkinRequest
-import net.sparklypower.rpc.UpdatePlayerSkinResponse
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.text.NumberFormat
 import java.util.*
 
 class SonecasCommand : SlashCommandDeclarationWrapper {
+    companion object {
+        private val numberFormat = NumberFormat.getNumberInstance(
+            Locale("pt", "BR"),
+        ).apply {
+            minimumFractionDigits = 2
+        }
+    }
+
     override fun command() = slashCommand("sonecas", "TODOFIXTHISDATA", CommandCategory.ECONOMY) {
         enableLegacyMessageSupport = true
 
@@ -88,9 +91,11 @@ class SonecasCommand : SlashCommandDeclarationWrapper {
                     return@transaction playerSonecasData?.get(PlayerSonecas.money)?.toDouble() ?: 0.0
                 }
 
+                val formattedSonecas = numberFormat.format(playerSonecasBalance)
+
                 context.reply(false) {
                     styled(
-                        "**`${playerData.username}`** possui **${playerSonecasBalance.formatToTwoDecimalPlaces()} Sonecas**!",
+                        "**`${playerData.username}`** possui **${formattedSonecas} Sonecas**!",
                         "\uD83D\uDCB5"
                     )
                 }
@@ -105,9 +110,11 @@ class SonecasCommand : SlashCommandDeclarationWrapper {
                     return@transaction playerSonecasData?.get(PlayerSonecas.money)?.toDouble() ?: 0.0
                 }
 
+                val formattedSonecas = numberFormat.format(playerSonecasBalance)
+
                 context.reply(false) {
                     styled(
-                        "Você possui **${playerSonecasBalance.formatToTwoDecimalPlaces()} Sonecas**!",
+                        "Você possui **${formattedSonecas} Sonecas**!",
                         "\uD83D\uDCB5"
                     )
                 }
@@ -156,7 +163,7 @@ class SonecasCommand : SlashCommandDeclarationWrapper {
             context.deferChannelMessage(false)
 
             val playerName = args[options.playerName]
-            val quantity = convertShortenedNumberToLong(args[options.quantity])
+            val quantity = args[options.quantity].convertShortenedNumberToDouble()
 
             if (quantity == null || quantity == 0.0 || formatSonecasAmount(quantity) == "0,00") {
                 context.reply(false) {
@@ -315,25 +322,6 @@ class SonecasCommand : SlashCommandDeclarationWrapper {
                 "$formattedNumber soneca"
             } else {
                 "$formattedNumber sonecas"
-            }
-        }
-
-        /**
-         * Converts a shortened [String] number (1k, 1.5k, 1M, 2.3kk, etc) to a [Double] number
-         *
-         * This also converts a normal number (non shortened) to a [Double]
-         *
-         * @param input the shortened number
-         * @return      the number as long or null if it is a non valid (example: text) number
-         */
-        fun convertShortenedNumberToLong(input: String): Double? {
-            val inputAsLowerCase = input.lowercase()
-
-            return when {
-                inputAsLowerCase.endsWith("m") -> inputAsLowerCase.removeSuffix("m").toDoubleOrNull()?.times(1_000_000)
-                inputAsLowerCase.endsWith("kk") -> inputAsLowerCase.removeSuffix("kk").toDoubleOrNull()?.times(1_000_000)
-                inputAsLowerCase.endsWith("k") -> inputAsLowerCase.removeSuffix("k").toDoubleOrNull()?.times(1_000)
-                else -> inputAsLowerCase.toDoubleOrNull()
             }
         }
     }

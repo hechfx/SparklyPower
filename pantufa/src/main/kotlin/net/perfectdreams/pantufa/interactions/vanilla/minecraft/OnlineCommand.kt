@@ -53,7 +53,7 @@ class OnlineCommand : SlashCommandDeclarationWrapper {
                         val name = obj["name"].string
                         val players = obj["players"].array.map {
                             it["name"].string
-                        }.sorted()
+                        }.sortedBy { it.lowercase() }
 
                         when (name) {
                             "sparklypower_survival" -> {
