@@ -5,6 +5,7 @@ import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.inject.Inject
 import com.typesafe.config.ConfigFactory
+import com.velocitypowered.api.command.CommandMeta
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.plugin.Plugin
@@ -135,26 +136,36 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
         server.eventManager.register(this, LoginListener(this, this.server))
         server.eventManager.register(this, ChatListener(this))
 
-        server.commandManager.register("premium", PremiumCommand(this))
-        server.commandManager.register("adminchat", AdminChatCommand(this, this.server), "a", "ademirchat")
-        server.commandManager.register("advdupeip", AdvancedDupeIpCommand(this), "advanceddupeip", "advancedupeip")
-        server.commandManager.register("ban", BanCommand(this, this.server))
-        server.commandManager.register("checkban", CheckBanCommand(this, this.server))
-        server.commandManager.register("connectionlog", ConnectionLogCommand(this))
-        server.commandManager.register("discord", DiscordCommand(this))
-        server.commandManager.register("dupeip", DupeIpCommand(this, this.server))
-        server.commandManager.register("geoip", GeoIpCommand(this))
-        server.commandManager.register("ipban", IpBanCommand(this, this.server), "banip", "baniripwildcard")
-        server.commandManager.register("ipwildcardban", IpBanCommand(this, this.server), "banipwildcard", "baniripwildcard")
-        server.commandManager.register("ipreport", IpReportCommand(this, this.server))
-        server.commandManager.register("ipunban", IpUnbanCommand(this, this.server), "desbanirip", "unbanip", "ipdesbanir")
-        server.commandManager.register("kick", KickCommand(this))
-        server.commandManager.register("unban", UnbanCommand(this, this.server))
-        server.commandManager.register("unwarn", UnwarnCommand(this, this.server))
-        server.commandManager.register("warn", WarnCommand(this, this.server), "avisar")
-        server.commandManager.register("banasn", BanASNCommand(this, this.server))
-        server.commandManager.register("unbanasn", UnbanASNCommand(this, this.server))
-        server.commandManager.register("checkandkick", CheckAndKickCommand(this, this.server))
+
+        server.commandManager.register(
+            selfCommandMetaBuilder("premium"),
+            PremiumCommand(this)
+        )
+        server.commandManager.register(
+            selfCommandMetaBuilder("adminchat", "a", "ademirchat"),
+            AdminChatCommand(this, this.server)
+        )
+        server.commandManager.register(
+            selfCommandMetaBuilder("advdupeip", "advanceddupeip", "advancedupeip"),
+            AdvancedDupeIpCommand(this)
+        )
+        server.commandManager.register(selfCommandMetaBuilder("ban"), BanCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("checkban"), CheckBanCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("connectionlog"), ConnectionLogCommand(this))
+        server.commandManager.register(selfCommandMetaBuilder("discord"), DiscordCommand(this))
+        server.commandManager.register(selfCommandMetaBuilder("dupeip"), DupeIpCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("geoip"), GeoIpCommand(this))
+        server.commandManager.register(selfCommandMetaBuilder("ipban", "banip", "baniripwildcard"), IpBanCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("ipwildcardban", "banipwildcard", "baniripwildcard"), IpBanCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("ipreport"), IpReportCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("ipunban", "desbanirip", "unbanip", "ipdesbanir"), IpUnbanCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("kick"), KickCommand(this))
+        server.commandManager.register(selfCommandMetaBuilder("unban"), UnbanCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("unwarn"), UnwarnCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("warn", "avisar"), WarnCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("banasn"), BanASNCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("unbanasn"), UnbanASNCommand(this, this.server))
+        server.commandManager.register(selfCommandMetaBuilder("checkandkick"), CheckAndKickCommand(this, this.server))
 
         // Register our custom listeners
         // THIS REQUIRES SPARKLYVELOCITY!!!
@@ -171,6 +182,10 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
         } else {
             logger.warn { "You aren't using SparklyVelocity! We aren't going to attempt to register another listeners then..." }
         }
+    }
+
+    private fun selfCommandMetaBuilder(alias: String, vararg otherAliases: String): CommandMeta {
+        return server.commandManager.metaBuilder(alias).aliases(*otherAliases).plugin(this).build()
     }
 
     private fun loadFavicons() {
