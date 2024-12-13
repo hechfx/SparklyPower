@@ -136,7 +136,7 @@ class DreamCore : KotlinPlugin() {
 		sparklyDisplayManager.start()
 
 		// SparklyPacketEvents
-		Bukkit.getPluginManager().registerEvents(PacketPipelineRegisterListener(), this)
+		Bukkit.getPluginManager().registerEvents(PacketPipelineRegisterListener(this), this)
 
 		val scheduler = Bukkit.getScheduler()
 
