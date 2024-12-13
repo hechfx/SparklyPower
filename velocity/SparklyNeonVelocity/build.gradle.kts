@@ -30,8 +30,8 @@ val shadowWithRuntimeDependencies by configurations.creating {
 dependencies {
     api(project(":common:KotlinRuntime"))
     api(project(":common-utils"))
-    compileOnlyApi("com.velocitypowered:velocity-api:3.2.0-sparklyvelocity-SNAPSHOT")
-    compileOnlyApi("com.velocitypowered:velocity-proxy:3.2.0-sparklyvelocity-SNAPSHOT")
+    compileOnlyApi("com.velocitypowered:velocity-api:3.4.0-sparklyvelocity-SNAPSHOT")
+    compileOnlyApi("com.velocitypowered:velocity-proxy:3.4.0-sparklyvelocity-SNAPSHOT")
 
     api(project(":common:tables"))
     api(project(":common:rpc-payloads"))
@@ -49,7 +49,7 @@ dependencies {
     api("io.ktor:ktor-client-cio:2.3.11")
     api("io.ktor:ktor-server-netty:2.3.11")
 
-    kapt("com.velocitypowered:velocity-api:3.2.0-SNAPSHOT")
+    kapt("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
 }
 
 
