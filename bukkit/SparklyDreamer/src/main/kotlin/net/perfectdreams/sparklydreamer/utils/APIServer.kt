@@ -3,7 +3,6 @@ package net.perfectdreams.sparklydreamer.utils
 import com.destroystokyo.paper.profile.ProfileProperty
 import com.google.common.util.concurrent.AtomicDouble
 import com.viaversion.viaversion.api.Via
-import com.viaversion.viaversion.api.ViaAPI
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -13,9 +12,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
-import io.micrometer.core.instrument.Gauge
-import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.MultiGauge
 import io.micrometer.core.instrument.Tag
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -27,6 +23,7 @@ import kotlinx.serialization.json.*
 import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcash.DreamCash
 import net.perfectdreams.dreamcash.tables.Cashes
+import net.perfectdreams.dreamcash.utils.Cash
 import net.perfectdreams.dreamcore.dao.DiscordAccount
 import net.perfectdreams.dreamcore.dao.User
 import net.perfectdreams.dreamcore.tables.DiscordAccounts
@@ -58,20 +55,18 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
 import javax.imageio.ImageIO
 
 class APIServer(private val plugin: SparklyDreamer) {
     companion object {
         private const val PANTUFA_PRINT_SHOP_MAP_PESADELOS_COST = 15L
-
     }
     private val logger = plugin.logger
     private var server: ApplicationEngine? = null
     private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     private val totalSonecasGauge: AtomicDouble = appMicrometerRegistry.gauge("sparklypower.total_sonecas", AtomicDouble(0.0))
+    private val totalCashGauge: AtomicDouble = appMicrometerRegistry.gauge("sparklypower.total_cash", AtomicDouble(0.0))
     private val playersOnlineGauge: AtomicInteger = appMicrometerRegistry.gauge("sparklypower.players_online", AtomicInteger(0))
     private val protocolVersionToCount = mutableMapOf<Pair<Int, Boolean>, AtomicInteger>()
 
@@ -116,8 +111,13 @@ class APIServer(private val plugin: SparklyDreamer) {
                             .first()[totalSonecasSum] ?: BigDecimal.ZERO
                     }
 
-                    totalSonecasGauge.set(totalSonecas.toDouble())
+                    val totalCash = transaction(Databases.databaseNetwork) {
+                        Cashes.selectAll()
+                            .sumByDouble { it[Cashes.cash].toDouble() }
+                    }
 
+                    totalSonecasGauge.set(totalSonecas.toDouble())
+                    totalCashGauge.set(totalCash)
 
                     call.respond(appMicrometerRegistry.scrape())
                 }
@@ -424,6 +424,39 @@ class APIServer(private val plugin: SparklyDreamer) {
 
                     call.respondText(
                         Json.encodeToString<TransferSonecasResponse>(response),
+                        ContentType.Application.Json
+                    )
+                }
+
+                post("/pantufa/transfer-cash") {
+                    val request = Json.decodeFromString<TransferCashRequest>(call.receiveText())
+
+                    val transferResult = Cash.transferCashFromPlayerToPlayer(
+                        request.giverName,
+                        UUID.fromString(request.requestedById),
+                        request.receiverName,
+                        request.quantity,
+                        request.bypassLastActiveTime
+                    )
+
+                    val response = when (transferResult) {
+                        Cash.TransferCashResult.CannotTransferCashToSelf -> TransferCashResponse.CannotTransferCashToSelf
+                        is Cash.TransferCashResult.NotEnoughCash -> TransferCashResponse.NotEnoughCash(transferResult.currentUserMoney)
+                        Cash.TransferCashResult.PlayerHasNotJoinedRecently -> TransferCashResponse.PlayerHasNotJoinedRecently
+                        Cash.TransferCashResult.UserDoesNotExist -> TransferCashResponse.UserDoesNotExist
+                        is Cash.TransferCashResult.Success -> TransferCashResponse.Success(
+                            transferResult.receiverName,
+                            transferResult.receiverId.toString(),
+                            transferResult.quantityGiven,
+                            transferResult.selfMoney,
+                            transferResult.receiverMoney,
+                        )
+                    }
+
+                    println(response)
+
+                    call.respondText(
+                        Json.encodeToString<TransferCashResponse>(response),
                         ContentType.Application.Json
                     )
                 }
