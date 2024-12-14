@@ -1,4 +1,4 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands.context
+package net.sparklypower.sparklyvelocitycore.utils.commands.context
 
 import com.mojang.brigadier.context.CommandContext
 import com.velocitypowered.api.command.CommandSource
@@ -58,14 +58,14 @@ class CommandContext(val nmsContext: CommandContext<CommandSource>) {
      * Requires that the [sender] has all the required [permissions]. If it isn't, the command will [fail].
      */
     fun requirePermissions(vararg permissions: String, reason: () -> (Component) = MISSING_PERMISSIONS): Boolean {
-        TODO()
-        /* val s = sender
+        val s = sender
         val hasAllPermissions = permissions.all { s.hasPermission(it) }
         if (!hasAllPermissions) {
-
+            sendMessage(reason.invoke())
+            return false
         }
-            fail(reason.invoke())
-        return hasAllPermissions */
+
+        return true
     }
 
     /* fun fail(message: String): Nothing = fail(

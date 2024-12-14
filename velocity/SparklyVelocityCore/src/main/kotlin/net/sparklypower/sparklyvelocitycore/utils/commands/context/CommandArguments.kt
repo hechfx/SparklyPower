@@ -1,9 +1,9 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands.context
+package net.sparklypower.sparklyvelocitycore.utils.commands.context
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
-import net.sparklypower.sparklyneonvelocity.utils.commands.options.CommandOption
+import net.sparklypower.sparklyvelocitycore.utils.commands.options.CommandOption
 
 class CommandArguments(val context: CommandContext) {
     /* companion object {

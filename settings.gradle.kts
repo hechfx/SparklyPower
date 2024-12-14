@@ -104,7 +104,9 @@ include(":bukkit:DreamBlockParty")
 include(":bukkit:DreamHolograms")
 
 // ===[ VELOCITY ]===
+include(":velocity:SparklyVelocityCore")
 include(":velocity:SparklyNeonVelocity")
+include(":velocity:SparklyTestVelocity")
 
 // ===[ PANTUFA ]===
 include(":pantufa")

@@ -12,6 +12,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sparklypower.rpc.SparklyBungeeRequest
 import net.sparklypower.rpc.SparklyBungeeResponse
+import net.sparklypower.rpc.VelocityPlayerGeyserResponse
 import net.sparklypower.sparklyneonvelocity.SparklyNeonVelocity
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -71,6 +72,21 @@ class APIServer(private val plugin: SparklyNeonVelocity, private val velocitySer
                         Json.encodeToString<SparklyBungeeResponse>(response),
                         ContentType.Application.Json
                     )
+                }
+
+                get("/players/{playerUniqueId}/geyser") {
+                    val playerUniqueId = UUID.fromString(call.parameters["playerUniqueId"])
+
+                    val player = velocityServer.getPlayer(playerUniqueId).getOrNull()
+
+                    if (player == null) {
+                        call.respondText(Json.encodeToString<VelocityPlayerGeyserResponse>(VelocityPlayerGeyserResponse.UnknownPlayer))
+                        return@get
+                    }
+
+                    val isGeyser = plugin.isGeyser(player)
+
+                    call.respondText(Json.encodeToString<VelocityPlayerGeyserResponse>(VelocityPlayerGeyserResponse.Success(isGeyser)))
                 }
             }
         }

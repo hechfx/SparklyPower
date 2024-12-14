@@ -1,7 +1,7 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands.options
+package net.sparklypower.sparklyvelocitycore.utils.commands.options
 
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import net.sparklypower.sparklyneonvelocity.utils.commands.context.CommandContext
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandContext
 
 typealias SuggestsBlock = ((CommandContext, SuggestionsBuilder) -> (Unit))?
 sealed class CommandOption<T>(val name: String, val optional: Boolean, val suggestsBlock: SuggestsBlock)

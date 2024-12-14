@@ -16,6 +16,14 @@ import net.sparklypower.sparklyneonvelocity.dao.IpBan
 import net.sparklypower.sparklyneonvelocity.dao.User
 import net.sparklypower.sparklyneonvelocity.tables.ConnectionLogEntries
 import net.sparklypower.sparklyneonvelocity.tables.PremiumUsers
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandArguments
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandContext
+import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.SparklyCommandDeclaration
+import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.SparklyCommandDeclarationWrapper
+import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.sparklyCommand
+import net.sparklypower.sparklyvelocitycore.utils.commands.executors.SparklyCommandExecutor
+import net.sparklypower.sparklyvelocitycore.utils.commands.options.CommandOptions
+import net.sparklypower.sparklyvelocitycore.utils.commands.options.buildSuggestionsBlockFromList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.insert
@@ -28,76 +36,109 @@ import java.time.ZoneId
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
-class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxyServer) : SimpleCommand {
-    override fun execute(invocation: SimpleCommand.Invocation) {
-        val playerName = invocation.arguments().getOrNull(0)
-        if (playerName == null) {
-            invocation.source().sendMessage("§cUse /ban jogador motivo".fromLegacySectionToTextComponent())
-            return
-        }
-        val reason = invocation.arguments().drop(1).joinToString(" ").ifEmpty { null }
+class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxyServer) : SparklyCommandDeclarationWrapper {
+    override fun declaration() = sparklyCommand(listOf("ban")) {
+        permission = "sparklyneonvelocity.ban"
+        executor = BanExecutor(m, server)
+    }
 
-        val (punishedDisplayName, punishedUniqueId, player) = m.punishmentManager.getPunishedInfoByString(playerName) ?: run {
-            invocation.source().sendMessage("§cEu sei que você tá correndo para banir aquele mlk meliante... mas eu não conheço ninguém chamado §b$playerName§c... respira um pouco... fica calmo e VEJA O NOME NOVAMENTE!".fromLegacySectionToTextComponent())
-            return
-        }
-
-        var effectiveReason = reason ?: "Sem motivo definido"
-
-        var silent = false
-        if (effectiveReason.contains("-s")) {
-            silent = true
-
-            effectiveReason = effectiveReason.replace("-s", "")
+    class BanExecutor(private val m: SparklyNeonVelocity, private val server: ProxyServer) : SparklyCommandExecutor() {
+        inner class Options : CommandOptions() {
+            val playerName = word(
+                "player_name",
+                buildSuggestionsBlockFromList {
+                    server.allPlayers.map { it.username }
+                }
+            )
+            
+            val reason = optionalGreedyString("reason")
         }
 
-        var ipBan = false
-        if (effectiveReason.contains("-i")) {
-            ipBan = true
+        override val options = Options()
 
-            effectiveReason = effectiveReason.replace("-i", "")
-        }
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            val playerName = args[options.playerName]
 
-        var temporary = false
-        var time = 0.toLong()
-        if (effectiveReason.contains("-t")) {
-            temporary = true
+            if (playerName == null) {
+                context.sendMessage("§cUse /ban jogador motivo".fromLegacySectionToTextComponent())
+                return
+            }
+            val reason =  args[options.reason]?.ifEmpty { null }
 
-            val splitted = effectiveReason.split("-t")
-            val timeSpec = splitted[1]
-
-            val timeMillis = timeSpec.convertToEpochMillisRelativeToNow()
-            if (timeMillis <= System.currentTimeMillis()) { // :rolling_eyes:
-                invocation.source().sendMessage("§cNão sei se você está congelado no passado, mas o tempo que você passou está no passado! o.O".fromLegacySectionToTextComponent())
+            val (punishedDisplayName, punishedUniqueId, player) = m.punishmentManager.getPunishedInfoByString(playerName) ?: run {
+                context.sendMessage("§cEu sei que você tá correndo para banir aquele mlk meliante... mas eu não conheço ninguém chamado §b$playerName§c... respira um pouco... fica calmo e VEJA O NOME NOVAMENTE!".fromLegacySectionToTextComponent())
                 return
             }
 
-            effectiveReason = effectiveReason.replace("-t$timeSpec", "")
-            time = timeMillis
-        }
+            var effectiveReason = reason ?: "Sem motivo definido"
 
-        val punisherDisplayName = m.punishmentManager.getPunisherName(invocation.source())
+            var silent = false
+            if (effectiveReason.contains("-s")) {
+                silent = true
 
-        val geoLocalization = m.pudding.transactionBlocking {
-            ConnectionLogEntry.find { ConnectionLogEntries.player eq punishedUniqueId!! }.maxByOrNull { it.connectedAt }
-        }
+                effectiveReason = effectiveReason.replace("-s", "")
+            }
 
-        val ip = if (player != null)
-            player.remoteAddress.hostString
-        else
-            geoLocalization?.ip
+            var ipBan = false
+            if (effectiveReason.contains("-i")) {
+                ipBan = true
 
-        m.pudding.transactionBlocking {
-            if (ipBan) {
-                if (ip == null) {
-                    invocation.source().sendMessage("§cInfelizmente não há nenhum registro de IP do player §e$punishedDisplayName§c!".fromLegacySectionToTextComponent())
-                    return@transactionBlocking
+                effectiveReason = effectiveReason.replace("-i", "")
+            }
+
+            var temporary = false
+            var time = 0.toLong()
+            if (effectiveReason.contains("-t")) {
+                temporary = true
+
+                val splitted = effectiveReason.split("-t")
+                val timeSpec = splitted[1]
+
+                val timeMillis = timeSpec.convertToEpochMillisRelativeToNow()
+                if (timeMillis <= System.currentTimeMillis()) { // :rolling_eyes:
+                    context.sendMessage("§cNão sei se você está congelado no passado, mas o tempo que você passou está no passado! o.O".fromLegacySectionToTextComponent())
+                    return
                 }
 
-                IpBan.new {
-                    this.ip = ip
+                effectiveReason = effectiveReason.replace("-t$timeSpec", "")
+                time = timeMillis
+            }
 
-                    this.punishedBy = (invocation.source() as? Player)?.uniqueId
+            val punisherDisplayName = m.punishmentManager.getPunisherName(context.sender)
+
+            val geoLocalization = m.pudding.transactionBlocking {
+                ConnectionLogEntry.find { ConnectionLogEntries.player eq punishedUniqueId!! }.maxByOrNull { it.connectedAt }
+            }
+
+            val ip = if (player != null)
+                player.remoteAddress.hostString
+            else
+                geoLocalization?.ip
+
+            m.pudding.transactionBlocking {
+                if (ipBan) {
+                    if (ip == null) {
+                        context.sendMessage("§cInfelizmente não há nenhum registro de IP do player §e$punishedDisplayName§c!".fromLegacySectionToTextComponent())
+                        return@transactionBlocking
+                    }
+
+                    IpBan.new {
+                        this.ip = ip
+
+                        this.punishedBy = (context as? Player)?.uniqueId
+                        this.punishedAt = System.currentTimeMillis()
+                        this.reason = effectiveReason
+
+                        if (temporary) {
+                            this.temporary = true
+                            this.expiresAt = time
+                        }
+                    }
+                }
+
+                Ban.new {
+                    this.player = punishedUniqueId!!
+                    this.punishedBy = (context as? Player)?.uniqueId
                     this.punishedAt = System.currentTimeMillis()
                     this.reason = effectiveReason
 
@@ -108,35 +149,22 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
                 }
             }
 
-            Ban.new {
-                this.player = punishedUniqueId!!
-                this.punishedBy = (invocation.source() as? Player)?.uniqueId
-                this.punishedAt = System.currentTimeMillis()
-                this.reason = effectiveReason
+            if (ip != null && !ipBan && !temporary) {
+                m.pudding.transactionBlocking {
+                    IpBan.new {
+                        this.ip = ip
 
-                if (temporary) {
-                    this.temporary = true
-                    this.expiresAt = time
+                        this.punishedBy = (context as? Player)?.uniqueId
+                        this.punishedAt = System.currentTimeMillis()
+                        this.reason = effectiveReason
+                        this.temporary = true
+                        this.expiresAt = System.currentTimeMillis() + PunishmentManager.DEFAULT_IPBAN_EXPIRATION
+                    }
                 }
             }
-        }
 
-        if (ip != null && !ipBan && !temporary) {
-            m.pudding.transactionBlocking {
-                IpBan.new {
-                    this.ip = ip
-
-                    this.punishedBy = (invocation.source() as? Player)?.uniqueId
-                    this.punishedAt = System.currentTimeMillis()
-                    this.reason = effectiveReason
-                    this.temporary = true
-                    this.expiresAt = System.currentTimeMillis() + PunishmentManager.DEFAULT_IPBAN_EXPIRATION
-                }
-            }
-        }
-
-        // Vamos expulsar o player ao ser banido
-        player?.disconnect("""
+            // Vamos expulsar o player ao ser banido
+            player?.disconnect("""
 			§cVocê foi banido!
 			§cMotivo:
 
@@ -144,23 +172,22 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
 			§cPor: $punisherDisplayName
         """.trimIndent().fromLegacySectionToTextComponent())
 
-        invocation.source().sendMessage("§b${punishedDisplayName}§a foi punido com sucesso, yay!! ^-^".fromLegacySectionToTextComponent())
+            context.sendMessage("§b${punishedDisplayName}§a foi punido com sucesso, yay!! ^-^".fromLegacySectionToTextComponent())
 
-        m.punishmentManager.sendPunishmentToDiscord(
-            silent,
-            punishedDisplayName ?: "Nome desconhecido",
-            punishedUniqueId!!,
-            "Banido ${if (temporary) "Temporariamente" else "Permanentemente"}",
-            punisherDisplayName,
-            effectiveReason,
-            (invocation.source() as? Player)?.currentServer?.getOrNull()?.server?.serverInfo?.name,
-            null
-        )
+            m.punishmentManager.sendPunishmentToDiscord(
+                silent,
+                punishedDisplayName ?: "Nome desconhecido",
+                punishedUniqueId!!,
+                "Banido ${if (temporary) "Temporariamente" else "Permanentemente"}",
+                punisherDisplayName,
+                effectiveReason,
+                (context as? Player)?.currentServer?.getOrNull()?.server?.serverInfo?.name,
+                null
+            )
 
-        if (!silent) {
-            server.sendMessage("§b${punisherDisplayName}§a baniu §c${punishedDisplayName}§a por §6\"§e${effectiveReason}§6\"§a!".fromLegacySectionToTextComponent())
+            if (!silent) {
+                server.sendMessage("§b${punisherDisplayName}§a baniu §c${punishedDisplayName}§a por §6\"§e${effectiveReason}§6\"§a!".fromLegacySectionToTextComponent())
+            }
         }
     }
-
-    override fun hasPermission(invocation: SimpleCommand.Invocation) = invocation.source().hasPermission("sparklyneonvelocity.ban")
 }

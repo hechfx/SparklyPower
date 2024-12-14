@@ -1,4 +1,4 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands.options
+package net.sparklypower.sparklyvelocitycore.utils.commands.options
 
 open class CommandOptions {
     companion object {

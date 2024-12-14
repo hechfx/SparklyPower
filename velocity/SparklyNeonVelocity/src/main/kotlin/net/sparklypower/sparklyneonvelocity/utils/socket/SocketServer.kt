@@ -26,8 +26,12 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 class SocketServer(val m: SparklyNeonVelocity, val server: ProxyServer, val socketPort: Int) {
+	var listener: ServerSocket? = null
+
 	fun start() {
 		val listener = ServerSocket(socketPort, 0, null)
+		this.listener = listener
+
 		try {
 			while (true) {
 				val socket = listener.accept()
@@ -237,6 +241,11 @@ class SocketServer(val m: SparklyNeonVelocity, val server: ProxyServer, val sock
 		} finally {
 			listener.close()
 		}
+	}
+
+	fun stop() {
+		m.logger.info("Closing listener!")
+		this.listener?.close()
 	}
 
 	class FakeCommandSender(val playerName: String) : CommandSource {

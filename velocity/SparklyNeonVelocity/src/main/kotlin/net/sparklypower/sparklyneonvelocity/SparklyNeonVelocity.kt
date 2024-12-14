@@ -5,16 +5,19 @@ import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.inject.Inject
 import com.typesafe.config.ConfigFactory
-import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandMeta
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
+import com.velocitypowered.api.plugin.Dependency
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
+import com.velocitypowered.api.proxy.InboundConnection
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.util.Favicon
 import com.velocitypowered.proxy.VelocityServer
+import com.velocitypowered.proxy.connection.client.LoginInboundConnection
+import com.velocitypowered.proxy.connection.util.VelocityInboundConnection
 import com.velocitypowered.proxy.util.AddressUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.slf4j.logger
@@ -37,20 +40,17 @@ import net.sparklypower.sparklyneonvelocity.listeners.ServerConnectListener
 import net.sparklypower.sparklyneonvelocity.network.APIServer
 import net.sparklypower.sparklyneonvelocity.tables.*
 import net.sparklypower.sparklyneonvelocity.utils.ASNManager
-import net.sparklypower.sparklyneonvelocity.utils.Pudding
 import net.sparklypower.sparklyneonvelocity.utils.StaffColors
-import net.sparklypower.sparklyneonvelocity.utils.commands.VelocityBrigadierCommandConverter
-import net.sparklypower.sparklyneonvelocity.utils.commands.declarations.SparklyCommandDeclarationWrapper
 import net.sparklypower.sparklyneonvelocity.utils.emotes
 import net.sparklypower.sparklyneonvelocity.utils.socket.SocketServer
+import net.sparklypower.sparklyvelocitycore.SparklyVelocityCore
+import net.sparklypower.sparklyvelocitycore.SparklyVelocityPlugin
+import net.sparklypower.sparklyvelocitycore.utils.Pudding
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.slf4j.Logger
 import java.io.File
-import java.net.InetSocketAddress
 import java.nio.file.Path
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import kotlin.concurrent.thread
 import kotlin.jvm.optionals.getOrNull
@@ -61,23 +61,28 @@ import kotlin.jvm.optionals.getOrNull
     version = "1.0.0-SNAPSHOT",
     url = "https://sparklypower.net",
     description = "I did it!", // Yay!!!
-    authors = ["MrPowerGamerBR"]
+    authors = ["MrPowerGamerBR"],
+    dependencies = arrayOf(
+        Dependency(id = "sparklyvelocitycore", optional = false)
+    )
 )
-class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _logger: Logger, @DataDirectory dataDirectory: Path) {
+class SparklyNeonVelocity @Inject constructor(
+    private val server: ProxyServer,
+    _logger: Logger,
+    @DataDirectory dataDirectory: Path
+) : SparklyVelocityPlugin() {
     val logger = KotlinLogging.logger(_logger)
 
     val dataFolder = dataDirectory.toFile()
     val favicons = mutableMapOf<String, Favicon>()
     val isMaintenance = File(dataDirectory.toFile(), "maintenance").exists()
 
-    val loggedInPlayers = Collections.newSetFromMap(ConcurrentHashMap<UUID, Boolean>())
-    val pudding: Pudding
-    val pingedByAddresses = Collections.newSetFromMap(
-        Caffeine.newBuilder()
-            .expireAfterAccess(1, TimeUnit.DAYS)
-            .build<String, Boolean>()
-            .asMap()
-    )
+    // We keep these things in here to avoid getting lost when reloading the SparklyNeonVelocity plugin
+    val loggedInPlayers
+        get() = SparklyVelocityCore.INSTANCE.loggedInPlayers
+    val pingedByAddresses
+        get() = SparklyVelocityCore.INSTANCE.pingedByAddresses
+
     val minecraftMojangApi = MinecraftMojangAPI()
     val asnManager = ASNManager(this)
     val punishmentManager = PunishmentManager(this, server)
@@ -87,6 +92,9 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
     val adminChatWebhook: WebhookClient
     val discordAccountAssociationsWebhook: WebhookClient
     val lockedAdminChat = mutableSetOf<UUID>()
+    var socketServer: SocketServer? = null
+    val pudding: Pudding
+        get() = SparklyVelocityCore.INSTANCE.pudding
 
     init {
         logger.info { "Hello there! I made my first plugin with Velocity. SparklyNeonVelocity~" }
@@ -94,14 +102,41 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
         punishmentWebhook = WebhookClient.withUrl(config.discord.webhooks.punishmentWebhook)
         adminChatWebhook = WebhookClient.withUrl(config.discord.webhooks.adminChatWebhook)
         discordAccountAssociationsWebhook = WebhookClient.withUrl(config.discord.webhooks.discordAccountAssociationsWebhook)
+    }
 
-        pudding = Pudding.createPostgreSQLPudding(
-            config.database.address,
-            config.database.database,
-            config.database.username,
-            config.database.password,
-            128
-        )
+    @Subscribe
+    fun onProxyInitialization(event: ProxyInitializeEvent) {
+        // Do some operation demanding access to the Velocity API here.
+        // For instance, we could register an event:
+        // We don't need to register the main class because it is already registered!
+        // The plugin main instance is automatically registered.
+
+        // Register our custom listeners
+        // THIS REQUIRES SPARKLYVELOCITY!!!
+        val proxyVersion = server.version
+        if (proxyVersion.name == "SparklyVelocity") {
+            val velocityServer = server as VelocityServer
+            for (listener in config.listeners) {
+                velocityServer.cm.bind(
+                    listener.name,
+                    AddressUtil.parseAndResolveAddress(listener.bind),
+                    listener.proxyProtocol
+                )
+            }
+        } else {
+            logger.warn { "You aren't using SparklyVelocity! We aren't going to attempt to register listeners then..." }
+        }
+    }
+
+    override fun onEnable() {
+        // onEnable is handled by SparklyVelocityCore, onEnable and onDisable are called on plugin load/unload/reload
+        loadFavicons()
+
+        if (config.socketPort != null) {
+            val socketServer = SocketServer(this, server, config.socketPort)
+            this.socketServer = socketServer
+            thread { socketServer.start() }
+        }
 
         runBlocking {
             pudding.transaction {
@@ -117,99 +152,50 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
             }
         }
 
-        loadFavicons()
-
-        asnManager.load()
-
-        apiServer.start()
-
-        if (config.socketPort != null) {
-            thread { SocketServer(this, server, config.socketPort).start() }
-        }
-    }
-
-    @Subscribe
-    fun onProxyInitialization(event: ProxyInitializeEvent) {
-        // Do some operation demanding access to the Velocity API here.
-        // For instance, we could register an event:
-        // We don't need to register the main class because it is already registered!
-        // The plugin main instance is automatically registered.
         server.eventManager.register(this, PingListener(this, this.server))
         server.eventManager.register(this, ServerConnectListener(this))
         server.eventManager.register(this, LoginListener(this, this.server))
         server.eventManager.register(this, ChatListener(this))
 
-
-        server.commandManager.register(
+        registerCommand(
+            server,
             selfCommandMetaBuilder("premium"),
             PremiumCommand(this)
         )
-        server.commandManager.register(
+        registerCommand(
+            server,
             selfCommandMetaBuilder("adminchat", "a", "ademirchat"),
             AdminChatCommand(this, this.server)
         )
-        server.commandManager.register(
+        registerCommand(
+            server,
             selfCommandMetaBuilder("advdupeip", "advanceddupeip", "advancedupeip"),
             AdvancedDupeIpCommand(this)
         )
-        server.commandManager.register(selfCommandMetaBuilder("ban"), BanCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("checkban"), CheckBanCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("connectionlog"), ConnectionLogCommand(this))
-        server.commandManager.register(selfCommandMetaBuilder("discord"), DiscordCommand(this))
-        server.commandManager.register(selfCommandMetaBuilder("dupeip"), DupeIpCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("geoip"), GeoIpCommand(this))
-        server.commandManager.register(selfCommandMetaBuilder("ipban", "banip", "baniripwildcard"), IpBanCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("ipwildcardban", "banipwildcard", "baniripwildcard"), IpBanCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("ipreport"), IpReportCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("ipunban", "desbanirip", "unbanip", "ipdesbanir"), IpUnbanCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("kick"), KickCommand(this))
-        server.commandManager.register(selfCommandMetaBuilder("unban"), UnbanCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("unwarn"), UnwarnCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("warn", "avisar"), WarnCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("banasn"), BanASNCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("unbanasn"), UnbanASNCommand(this, this.server))
-        server.commandManager.register(selfCommandMetaBuilder("checkandkick"), CheckAndKickCommand(this, this.server))
+        registerCommand(server, BanCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("checkban"), CheckBanCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("connectionlog"), ConnectionLogCommand(this))
+        registerCommand(server, selfCommandMetaBuilder("discord"), DiscordCommand(this))
+        registerCommand(server, selfCommandMetaBuilder("dupeip"), DupeIpCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("geoip"), GeoIpCommand(this))
+        registerCommand(server, selfCommandMetaBuilder("ipban", "banip", "baniripwildcard"), IpBanCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("ipwildcardban", "banipwildcard", "baniripwildcard"), IpBanCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("ipreport"), IpReportCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("ipunban", "desbanirip", "unbanip", "ipdesbanir"), IpUnbanCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("kick"), KickCommand(this))
+        registerCommand(server, selfCommandMetaBuilder("unban"), UnbanCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("unwarn"), UnwarnCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("warn", "avisar"), WarnCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("banasn"), BanASNCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("unbanasn"), UnbanASNCommand(this, this.server))
+        registerCommand(server, selfCommandMetaBuilder("checkandkick"), CheckAndKickCommand(this, this.server))
 
-        registerCommand(BrigadierVelocityTestCommand())
-
-        // Register our custom listeners
-        // THIS REQUIRES SPARKLYVELOCITY!!!
-        val proxyVersion = server.version
-        if (proxyVersion.name == "SparklyVelocity") {
-            val velocityServer = server as VelocityServer
-            for (listener in config.listeners) {
-                velocityServer.cm.bind(
-                    listener.name,
-                    AddressUtil.parseAndResolveAddress(listener.bind),
-                    listener.proxyProtocol
-                )
-            }
-        } else {
-            logger.warn { "You aren't using SparklyVelocity! We aren't going to attempt to register another listeners then..." }
-        }
+        apiServer.start()
     }
 
-    private fun registerCommand(declarationWrapper: SparklyCommandDeclarationWrapper) {
-        val declaration = declarationWrapper.declaration()
-
-        val commandWrappers = declaration.labels.map {
-            VelocityBrigadierCommandConverter(
-                it,
-                declaration
-            )
-        }
-
-        val velocityBrigadierCommands = commandWrappers.map { BrigadierCommand(it.convertRootDeclarationToBrigadier()) }
-
-        for (velocityBrigadierCommand in velocityBrigadierCommands) {
-            server.commandManager.register(
-                server.commandManager
-                    .metaBuilder(velocityBrigadierCommand)
-                    .plugin(this)
-                    .build(),
-                velocityBrigadierCommand
-            )
-        }
+    override fun onDisable() {
+        this.apiServer.stop()
+        this.socketServer?.stop()
     }
 
     private fun selfCommandMetaBuilder(alias: String, vararg otherAliases: String): CommandMeta {
@@ -276,5 +262,20 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
                 .setContent(text)
                 .build()
         )
+    }
+
+    fun isGeyser(connection: InboundConnection): Boolean {
+        val minecraftConnection = if (connection is LoginInboundConnection) {
+            connection.delegatedConnection()
+        } else if (connection is VelocityInboundConnection) {
+            connection.connection
+        } else error("I don't know how to get a MinecraftConnection from a ${connection}!")
+
+        val listenerName = minecraftConnection.listenerName
+        logger.info { "${connection.remoteAddress} listener name: $listenerName" }
+
+        // To detect and keep player IPs correctly, we use a separate Bungee listener that uses the PROXY protocol
+        // To check if the user is connecting thru Geyser, we will check if the listener name matches what we would expect
+        return listenerName == "geyser"
     }
 }

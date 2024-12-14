@@ -49,24 +49,9 @@ class LoginListener(val m: SparklyNeonVelocity, val server: ProxyServer) {
     private val isOnlineModeSet = HashMap<String, Boolean>()
     private val nameToPremiumData = HashMap<String, ResultRow>()
 
-    private fun isGeyser(connection: InboundConnection): Boolean {
-        val minecraftConnection = if (connection is LoginInboundConnection) {
-            connection.delegatedConnection()
-        } else if (connection is VelocityInboundConnection) {
-            connection.connection
-        } else error("I don't know how to get a MinecraftConnection from a ${connection}!")
-
-        val listenerName = minecraftConnection.listenerName
-        m.logger.info { "${connection.remoteAddress} listener name: $listenerName" }
-
-        // To detect and keep player IPs correctly, we use a separate Bungee listener that uses the PROXY protocol
-        // To check if the user is connecting thru Geyser, we will check if the listener name matches what we would expect
-        return listenerName == "geyser"
-    }
-
     @Subscribe
     fun onPreLogin(event: PreLoginEvent, continuation: Continuation) {
-        val isGeyser = isGeyser(event.connection)
+        val isGeyser = m.isGeyser(event.connection)
 
         val playerName = event.username
         m.logger.info { "User $playerName (IP: ${event.connection.remoteAddress.hostString}) is pre logging in... Is Geyser? $isGeyser" }
@@ -198,7 +183,7 @@ class LoginListener(val m: SparklyNeonVelocity, val server: ProxyServer) {
     @Subscribe
     fun onGameProfileRequest(event: GameProfileRequestEvent, continuation: Continuation) {
         m.logger.info { "Received a GameProfileRequestEvent" }
-        val isGeyser = isGeyser(event.connection)
+        val isGeyser = m.isGeyser(event.connection)
         // Reset to the default offline mode UUID
         event.gameProfile = event.gameProfile.withId(UUID.nameUUIDFromBytes("OfflinePlayer:${event.username}".toByteArray(Charsets.UTF_8)))
 
@@ -228,7 +213,7 @@ class LoginListener(val m: SparklyNeonVelocity, val server: ProxyServer) {
 
     @Subscribe
     fun onLogin(event: LoginEvent, continuation: Continuation) {
-        val isGeyser = isGeyser(event.player)
+        val isGeyser = m.isGeyser(event.player)
         val playerName = event.player.username
         val uniqueId = event.player.uniqueId
         val premiumData = nameToPremiumData[playerName]

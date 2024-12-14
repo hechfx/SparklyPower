@@ -1,4 +1,4 @@
-package net.sparklypower.sparklyneonvelocity.utils
+package net.sparklypower.sparklyvelocitycore.utils
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SparklyNeonVelocityConfig(
-    val database: DatabaseConfig,
     val listeners: List<VelocityListenerConfig>,
     val discord: DiscordConfig,
     val socketPort: Int?,
@@ -12,14 +11,6 @@ data class SparklyNeonVelocityConfig(
     val alwaysForceOfflineMode: Boolean,
     val requireDreamAuthLogin: Boolean
 ) {
-    @Serializable
-    data class DatabaseConfig(
-        val database: String,
-        val address: String,
-        val username: String,
-        val password: String
-    )
-
     @Serializable
     data class VelocityListenerConfig(
         val name: String,

@@ -1,4 +1,4 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands.options
+package net.sparklypower.sparklyvelocitycore.utils.commands.options
 
 sealed class CommandOptionBuilder<T>(
     val name: String,

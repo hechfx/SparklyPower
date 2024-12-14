@@ -1,8 +1,8 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands.executors
+package net.sparklypower.sparklyvelocitycore.utils.commands.executors
 
-import net.sparklypower.sparklyneonvelocity.utils.commands.context.CommandArguments
-import net.sparklypower.sparklyneonvelocity.utils.commands.context.CommandContext
-import net.sparklypower.sparklyneonvelocity.utils.commands.options.CommandOptions
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandArguments
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandContext
+import net.sparklypower.sparklyvelocitycore.utils.commands.options.CommandOptions
 
 /**
  * This is the class that should be inherited if you

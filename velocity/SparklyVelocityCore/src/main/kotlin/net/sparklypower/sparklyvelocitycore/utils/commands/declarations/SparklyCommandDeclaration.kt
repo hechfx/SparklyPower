@@ -1,6 +1,6 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands.declarations
+package net.sparklypower.sparklyvelocitycore.utils.commands.declarations
 
-import net.sparklypower.sparklyneonvelocity.utils.commands.executors.SparklyCommandExecutor
+import net.sparklypower.sparklyvelocitycore.utils.commands.executors.SparklyCommandExecutor
 
 open class SparklyCommandDeclaration(
     val labels: List<String>,

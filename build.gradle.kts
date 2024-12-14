@@ -1,8 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.0.0"
-    kotlin("plugin.serialization") version "2.0.0" apply false
+    kotlin("jvm") version "2.0.21"
+    kotlin("plugin.serialization") version "2.0.21" apply false
+    // kotlin("kapt") version "2.0.21" apply false // Required for Velocity Annotations
     id("io.papermc.paperweight.userdev") version Versions.PAPERWEIGHT_USERDEV apply false
 }
 

@@ -1,4 +1,4 @@
-package net.sparklypower.sparklyneonvelocity.utils.commands
+package net.sparklypower.sparklyvelocitycore.utils.commands
 
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.DoubleArgumentType
@@ -9,10 +9,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.suggestion.Suggestions
 import com.velocitypowered.api.command.CommandSource
-import net.sparklypower.sparklyneonvelocity.utils.commands.context.CommandArguments
-import net.sparklypower.sparklyneonvelocity.utils.commands.context.CommandContext
-import net.sparklypower.sparklyneonvelocity.utils.commands.declarations.SparklyCommandDeclaration
-import net.sparklypower.sparklyneonvelocity.utils.commands.options.*
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandArguments
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandContext
+import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.SparklyCommandDeclaration
+import net.sparklypower.sparklyvelocitycore.utils.commands.options.*
 import java.util.concurrent.CompletableFuture
 
 // Once upon a time this was a real Bukkit command
@@ -55,8 +55,11 @@ class VelocityBrigadierCommandConverter(
                 // If there are permissions set in the declaration, we are going to check with "requirePermissions"
                 // If the user does not have a permission, it will fail! (so, it will throw an exception)
                 // This needs to be within this try catch block so it will catch the CommandException!
-                if (requiredPermissions.isNotEmpty())
-                    context.requirePermissions(*requiredPermissions.toTypedArray())
+                if (requiredPermissions.isNotEmpty()) {
+                    val hasPermissions = context.requirePermissions(*requiredPermissions.toTypedArray())
+                    if (!hasPermissions)
+                        return@Command com.mojang.brigadier.Command.SINGLE_SUCCESS
+                }
 
                 val executor = declaration.executor ?: error("I couldn't find a executor!")
                 executor.execute(context, CommandArguments(context))
