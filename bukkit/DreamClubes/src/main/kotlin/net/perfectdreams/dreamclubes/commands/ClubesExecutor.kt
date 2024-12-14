@@ -57,6 +57,7 @@ class ClubesExecutor(m: DreamClubes) : SparklyClubesCommandExecutor(m) {
                     player.sendMessage("/clube prefixo - Coloca um prefixo no player")
                     player.sendMessage("/clube setcasa - Marca a casa do clube")
                     player.sendMessage("/clube delcasa - Deleta a casa do clube")
+                    player.sendMessage("/clube convidar - Convida algu\u00e9m para o clube")
                 }
                 if (hasClan) {
                     player.sendMessage("/clube casa - Teletransporta para a casa do clube")
