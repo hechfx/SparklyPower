@@ -226,14 +226,7 @@ class SonecasCommand : SlashCommandDeclarationWrapper {
                         )
                     }
                 }
-                is TransferSonecasResponse.NotEnoughSonecas -> {
-                    context.reply(false) {
-                        styled(
-                            "Você não tem **${formatSonecasAmountWithCurrencyName(quantity)} para fazer isto! Você precisa conseguir mais ${formatSonecasAmountWithCurrencyName(quantity - transferSonecasResponse.currentUserMoney)} para continuar.",
-                            Constants.ERROR
-                        )
-                    }
-                }
+
                 TransferSonecasResponse.PlayerHasNotJoinedRecently -> {
                     context.reply(false) {
                         styled(
@@ -265,6 +258,7 @@ class SonecasCommand : SlashCommandDeclarationWrapper {
                         )
                     }
                 }
+
                 TransferSonecasResponse.UserDoesNotExist -> {
                     context.reply(false) {
                         styled(
@@ -273,6 +267,34 @@ class SonecasCommand : SlashCommandDeclarationWrapper {
                         )
                     }
                 }
+
+                TransferSonecasResponse.YouAreBanned -> {
+                    context.reply(false) {
+                        styled(
+                            "Você não pode transferir sonecas enquanto estiver banido!",
+                            Constants.ERROR
+                        )
+                    }
+                }
+
+                TransferSonecasResponse.YouAreTryingToTransferToABannedUser -> {
+                    context.reply(false) {
+                        styled(
+                            "Você não pode transferir sonecas para um player banido!",
+                            Constants.ERROR
+                        )
+                    }
+                }
+
+                is TransferSonecasResponse.NotEnoughSonecas -> {
+                    context.reply(false) {
+                        styled(
+                            "Você não tem **${formatSonecasAmountWithCurrencyName(quantity)} para fazer isto! Você precisa conseguir mais ${formatSonecasAmountWithCurrencyName(quantity - transferSonecasResponse.currentUserMoney)} para continuar.",
+                            Constants.ERROR
+                        )
+                    }
+                }
+
                 is TransferSonecasResponse.Success -> {
                     // Let's add a random emoji just to look cute
                     val user1Emote = HANGLOOSE_EMOTES.random()

@@ -24,6 +24,12 @@ sealed class TransferSonecasResponse {
     data object UserDoesNotExist : TransferSonecasResponse()
 
     @Serializable
+    data object YouAreBanned : TransferSonecasResponse()
+
+    @Serializable
+    data object YouAreTryingToTransferToABannedUser : TransferSonecasResponse()
+
+    @Serializable
     data class NotEnoughSonecas(val currentUserMoney: Double) : TransferSonecasResponse()
 
     @Serializable

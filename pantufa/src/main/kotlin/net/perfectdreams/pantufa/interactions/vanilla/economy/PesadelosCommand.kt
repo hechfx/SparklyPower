@@ -198,15 +198,6 @@ class PesadelosCommand : SlashCommandDeclarationWrapper {
                     }
                 }
 
-                is TransferCashResponse.NotEnoughCash -> {
-                    context.reply(false) {
-                        styled(
-                            "Você não possui pesadelos suficientes para transferir! Você possui **${transferCashResponse.currentUserMoney}** ${if (transferCashResponse.currentUserMoney == 1L) "pesadelo" else "pesadelos"}!",
-                            Constants.ERROR
-                        )
-                    }
-                }
-
                 TransferCashResponse.PlayerHasNotJoinedRecently -> {
                     context.reply(false) {
                         styled(
@@ -248,8 +239,34 @@ class PesadelosCommand : SlashCommandDeclarationWrapper {
                     }
                 }
 
-                is TransferCashResponse.Success -> {
+                TransferCashResponse.YouAreBanned -> {
+                    context.reply(false) {
+                        styled(
+                            "Você não pode transferir pesadelos enquanto estiver banido!",
+                            Constants.ERROR
+                        )
+                    }
+                }
 
+                TransferCashResponse.YouAreTryingToTransferToABannedUser -> {
+                    context.reply(false) {
+                        styled(
+                            "Você não pode transferir pesadelos para alguém que está banido!",
+                            Constants.ERROR
+                        )
+                    }
+                }
+
+                is TransferCashResponse.NotEnoughCash -> {
+                    context.reply(false) {
+                        styled(
+                            "Você não possui pesadelos suficientes para transferir! Você possui **${numberFormat.format(transferCashResponse.currentUserMoney)}** ${if (transferCashResponse.currentUserMoney == 1L) "pesadelo" else "pesadelos"}!",
+                            Constants.ERROR
+                        )
+                    }
+                }
+
+                is TransferCashResponse.Success -> {
                     context.reply(false) {
                         styled(
                             "Transferência realizada com sucesso! `${transferCashResponse.receiverName}` recebeu **${formatPesadelosAmountWithCurrencyName(transferCashResponse.quantityGiven)}**!",
@@ -270,9 +287,9 @@ class PesadelosCommand : SlashCommandDeclarationWrapper {
 
         private fun formatPesadelosAmountWithCurrencyName(input: Long): String {
             return if (input == 1L) {
-                "$input Pesadelo"
+                "${numberFormat.format(input)} Pesadelo"
             } else {
-                "$input Pesadelos"
+                "${numberFormat.format(input)} Pesadelos"
             }
         }
 

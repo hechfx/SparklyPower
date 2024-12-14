@@ -2,6 +2,8 @@ package net.perfectdreams.dreamsonecas
 
 import kotlinx.coroutines.Dispatchers
 import net.kyori.adventure.text.format.NamedTextColor
+import net.perfectdreams.dreamcore.dao.Ban
+import net.perfectdreams.dreamcore.tables.Bans
 import net.perfectdreams.dreamcore.tables.TrackedOnlineHours
 import net.perfectdreams.dreamcore.tables.Users
 import net.perfectdreams.dreamcore.utils.Databases
@@ -155,6 +157,14 @@ object SonecasUtils {
         if (receiverData[Users.id].value == giverUniqueId)
             return TransferSonhosResult.CannotTransferSonecasToSelf
 
+        // check if the player is banned
+        if (Ban.find { Bans.player eq giverUniqueId }.any())
+            return TransferSonhosResult.YouAreBanned
+
+        // check if the target player is banned
+        if (Ban.find { Bans.player eq receiverData[Users.id].value }.any())
+            return TransferSonhosResult.YouAreTryingToTransferToABannedUser
+
         // Do we have enough money?
         val selfSonecas = PlayerSonecas.selectAll().where { PlayerSonecas.id eq giverUniqueId }.firstOrNull()?.get(PlayerSonecas.money)?.toDouble() ?: 0.0
 
@@ -246,6 +256,8 @@ object SonecasUtils {
         data object UserDoesNotExist : TransferSonhosResult()
         data object CannotTransferSonecasToSelf : TransferSonhosResult()
         data object PlayerHasNotJoinedRecently : TransferSonhosResult()
+        data object YouAreBanned : TransferSonhosResult()
+        data object YouAreTryingToTransferToABannedUser : TransferSonhosResult()
         data class NotEnoughSonecas(val currentUserMoney: Double) : TransferSonhosResult()
         data class Success(
             val receiverName: String,
