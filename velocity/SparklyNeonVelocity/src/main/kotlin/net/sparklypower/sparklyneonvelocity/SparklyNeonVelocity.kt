@@ -5,6 +5,7 @@ import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.inject.Inject
 import com.typesafe.config.ConfigFactory
+import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandMeta
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
@@ -38,6 +39,8 @@ import net.sparklypower.sparklyneonvelocity.tables.*
 import net.sparklypower.sparklyneonvelocity.utils.ASNManager
 import net.sparklypower.sparklyneonvelocity.utils.Pudding
 import net.sparklypower.sparklyneonvelocity.utils.StaffColors
+import net.sparklypower.sparklyneonvelocity.utils.commands.VelocityBrigadierCommandConverter
+import net.sparklypower.sparklyneonvelocity.utils.commands.declarations.SparklyCommandDeclarationWrapper
 import net.sparklypower.sparklyneonvelocity.utils.emotes
 import net.sparklypower.sparklyneonvelocity.utils.socket.SocketServer
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -167,6 +170,8 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
         server.commandManager.register(selfCommandMetaBuilder("unbanasn"), UnbanASNCommand(this, this.server))
         server.commandManager.register(selfCommandMetaBuilder("checkandkick"), CheckAndKickCommand(this, this.server))
 
+        registerCommand(BrigadierVelocityTestCommand())
+
         // Register our custom listeners
         // THIS REQUIRES SPARKLYVELOCITY!!!
         val proxyVersion = server.version
@@ -181,6 +186,29 @@ class SparklyNeonVelocity @Inject constructor(private val server: ProxyServer, _
             }
         } else {
             logger.warn { "You aren't using SparklyVelocity! We aren't going to attempt to register another listeners then..." }
+        }
+    }
+
+    private fun registerCommand(declarationWrapper: SparklyCommandDeclarationWrapper) {
+        val declaration = declarationWrapper.declaration()
+
+        val commandWrappers = declaration.labels.map {
+            VelocityBrigadierCommandConverter(
+                it,
+                declaration
+            )
+        }
+
+        val velocityBrigadierCommands = commandWrappers.map { BrigadierCommand(it.convertRootDeclarationToBrigadier()) }
+
+        for (velocityBrigadierCommand in velocityBrigadierCommands) {
+            server.commandManager.register(
+                server.commandManager
+                    .metaBuilder(velocityBrigadierCommand)
+                    .plugin(this)
+                    .build(),
+                velocityBrigadierCommand
+            )
         }
     }
 
