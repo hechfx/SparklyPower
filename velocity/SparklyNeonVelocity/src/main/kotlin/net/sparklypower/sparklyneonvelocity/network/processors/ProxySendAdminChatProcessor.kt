@@ -42,7 +42,7 @@ class ProxySendAdminChatProcessor(val m: SparklyNeonVelocity, val server: ProxyS
                         val primaryGroup = lpUser.primaryGroup
 
                         // The last color is a fallback, it checks for "group.default", so everyone should, hopefully, have that permission
-                        val role = StaffColors.entries.first { it.permission == "group.$primaryGroup" }
+                        val role = StaffColors.entries.firstOrNull { it.permission == "group.$primaryGroup" } ?: StaffColors.DEFAULT
 
                         val isGirl = runBlocking {
                             m.pudding.transaction {

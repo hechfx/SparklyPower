@@ -34,6 +34,12 @@ enum class StaffColors(val prefixes: List<Char>, val colors: Colors, val permiss
         "group.construtor"
     ),
 
+    DEVELOPER(
+        listOf('\ue23d'),
+        Triple(0xFFAA00, 0xFBD377, 0xF9C24A).asColors,
+        "group.developer"
+    ),
+
     SUPPORT(
         listOf('\ue23d'),
         Triple(0xFFAA00, 0xFBD377, 0xF9C24A).asColors,
