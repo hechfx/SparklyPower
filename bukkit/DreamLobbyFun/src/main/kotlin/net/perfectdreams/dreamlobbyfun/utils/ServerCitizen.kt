@@ -152,7 +152,7 @@ class ServerCitizen(
 				playerCountHologram.textDisplayBlock.text(
 					textComponent {
 						color(NamedTextColor.GRAY)
-						content("$playerCount player online")
+						content("$playerCount players online")
 					}
 				)
 			}
