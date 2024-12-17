@@ -431,6 +431,20 @@ class SonecasCommand(val m: DreamSonecas) : SparklyCommandDeclarationWrapper {
                             player.playSound(player.location, "sparklypower.sfx.money", SoundCategory.RECORDS, 1.0f, DreamUtils.random.nextFloat(0.9f, 1.1f))
                             return@onMainThread
                         }
+
+                        SonecasUtils.TransferSonhosResult.YouAreTryingToTransferToABannedUser -> {
+                            context.sendMessage {
+                                color(NamedTextColor.RED)
+                                append(prefix())
+                                appendSpace()
+                                append("Você não pode transferir sonecas para um jogador banido!")
+                            }
+                            return@onMainThread
+                        }
+
+                        SonecasUtils.TransferSonhosResult.YouAreBanned -> {
+                            // just can't happen, xd
+                        }
                     }
                 }
             }

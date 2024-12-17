@@ -6,6 +6,8 @@ import net.perfectdreams.dreamcash.DreamCash
 import net.perfectdreams.dreamcash.dao.CashInfo
 import net.perfectdreams.dreamcash.tables.Cashes
 import net.perfectdreams.dreamcore.cash.NightmaresCashRegister
+import net.perfectdreams.dreamcore.dao.Ban
+import net.perfectdreams.dreamcore.tables.Bans
 import net.perfectdreams.dreamcore.tables.TrackedOnlineHours
 import net.perfectdreams.dreamcore.tables.Users
 import net.perfectdreams.dreamcore.utils.*
@@ -161,6 +163,14 @@ object Cash : NightmaresCashRegister {
         if (receiverData[Users.id].value == giverUniqueId)
             return TransferCashResult.CannotTransferCashToSelf
 
+        // check if the player is banned
+        if (Ban.find { Bans.player eq giverUniqueId }.any())
+            return TransferCashResult.YouAreBanned
+
+        // check if the target player is banned
+        if (Ban.find { Bans.player eq receiverData[Users.id].value }.any())
+            return TransferCashResult.YouAreTryingToTransferToABannedUser
+
         // Do we have enough money?
         val selfCashes = Cashes.selectAll().where { Cashes.id eq giverUniqueId }.firstOrNull()?.get(Cashes.cash) ?: 0L
 
@@ -224,6 +234,8 @@ object Cash : NightmaresCashRegister {
         data object CannotTransferCashToSelf : TransferCashResult()
         data object PlayerHasNotJoinedRecently : TransferCashResult()
         data object UserDoesNotExist : TransferCashResult()
+        data object YouAreBanned : TransferCashResult()
+        data object YouAreTryingToTransferToABannedUser : TransferCashResult()
         data class NotEnoughCash(val currentUserMoney: Long) : TransferCashResult()
         data class Success(
             val receiverName: String,

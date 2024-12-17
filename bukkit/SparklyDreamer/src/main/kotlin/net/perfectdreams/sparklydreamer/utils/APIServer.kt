@@ -65,9 +65,9 @@ class APIServer(private val plugin: SparklyDreamer) {
     private val logger = plugin.logger
     private var server: ApplicationEngine? = null
     private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    private val totalSonecasGauge: AtomicDouble = appMicrometerRegistry.gauge("sparklypower.total_sonecas", AtomicDouble(0.0))
-    private val totalCashGauge: AtomicDouble = appMicrometerRegistry.gauge("sparklypower.total_cash", AtomicDouble(0.0))
-    private val playersOnlineGauge: AtomicInteger = appMicrometerRegistry.gauge("sparklypower.players_online", AtomicInteger(0))
+    private val totalSonecasGauge: AtomicDouble? = appMicrometerRegistry.gauge("sparklypower.total_sonecas", AtomicDouble(0.0))
+    private val totalCashGauge: AtomicDouble? = appMicrometerRegistry.gauge("sparklypower.total_cash", AtomicDouble(0.0))
+    private val playersOnlineGauge: AtomicInteger? = appMicrometerRegistry.gauge("sparklypower.players_online", AtomicInteger(0))
     private val protocolVersionToCount = mutableMapOf<Pair<Int, Boolean>, AtomicInteger>()
 
     fun start() {
@@ -84,7 +84,7 @@ class APIServer(private val plugin: SparklyDreamer) {
 
                     plugin.launchMainThreadDeferred {
                         val onlinePlayers = Bukkit.getOnlinePlayers()
-                        playersOnlineGauge.set(onlinePlayers.size)
+                        playersOnlineGauge?.set(onlinePlayers.size)
 
                         protocolVersionToCount.forEach { t, u ->
                             u.set(0)
@@ -116,8 +116,8 @@ class APIServer(private val plugin: SparklyDreamer) {
                             .sumByDouble { it[Cashes.cash].toDouble() }
                     }
 
-                    totalSonecasGauge.set(totalSonecas.toDouble())
-                    totalCashGauge.set(totalCash)
+                    totalSonecasGauge?.set(totalSonecas.toDouble())
+                    totalCashGauge?.set(totalCash)
 
                     call.respond(appMicrometerRegistry.scrape())
                 }
@@ -408,9 +408,11 @@ class APIServer(private val plugin: SparklyDreamer) {
 
                     val response = when (transferResult) {
                         SonecasUtils.TransferSonhosResult.CannotTransferSonecasToSelf -> TransferSonecasResponse.CannotTransferSonecasToSelf
-                        is SonecasUtils.TransferSonhosResult.NotEnoughSonecas -> TransferSonecasResponse.NotEnoughSonecas(transferResult.currentUserMoney)
                         SonecasUtils.TransferSonhosResult.PlayerHasNotJoinedRecently -> TransferSonecasResponse.PlayerHasNotJoinedRecently
                         SonecasUtils.TransferSonhosResult.UserDoesNotExist -> TransferSonecasResponse.UserDoesNotExist
+                        SonecasUtils.TransferSonhosResult.YouAreBanned -> TransferSonecasResponse.YouAreBanned
+                        SonecasUtils.TransferSonhosResult.YouAreTryingToTransferToABannedUser -> TransferSonecasResponse.YouAreTryingToTransferToABannedUser
+                        is SonecasUtils.TransferSonhosResult.NotEnoughSonecas -> TransferSonecasResponse.NotEnoughSonecas(transferResult.currentUserMoney)
                         is SonecasUtils.TransferSonhosResult.Success -> TransferSonecasResponse.Success(
                             transferResult.receiverName,
                             transferResult.receiverId.toString(),
@@ -441,9 +443,11 @@ class APIServer(private val plugin: SparklyDreamer) {
 
                     val response = when (transferResult) {
                         Cash.TransferCashResult.CannotTransferCashToSelf -> TransferCashResponse.CannotTransferCashToSelf
-                        is Cash.TransferCashResult.NotEnoughCash -> TransferCashResponse.NotEnoughCash(transferResult.currentUserMoney)
                         Cash.TransferCashResult.PlayerHasNotJoinedRecently -> TransferCashResponse.PlayerHasNotJoinedRecently
                         Cash.TransferCashResult.UserDoesNotExist -> TransferCashResponse.UserDoesNotExist
+                        Cash.TransferCashResult.YouAreBanned -> TransferCashResponse.YouAreBanned
+                        Cash.TransferCashResult.YouAreTryingToTransferToABannedUser -> TransferCashResponse.YouAreTryingToTransferToABannedUser
+                        is Cash.TransferCashResult.NotEnoughCash -> TransferCashResponse.NotEnoughCash(transferResult.currentUserMoney)
                         is Cash.TransferCashResult.Success -> TransferCashResponse.Success(
                             transferResult.receiverName,
                             transferResult.receiverId.toString(),

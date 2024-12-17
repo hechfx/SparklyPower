@@ -23,6 +23,12 @@ sealed class TransferCashResponse {
     data object UserDoesNotExist : TransferCashResponse()
 
     @Serializable
+    data object YouAreBanned : TransferCashResponse()
+
+    @Serializable
+    data object YouAreTryingToTransferToABannedUser : TransferCashResponse()
+
+    @Serializable
     data class NotEnoughCash(val currentUserMoney: Long) : TransferCashResponse()
 
     @Serializable
