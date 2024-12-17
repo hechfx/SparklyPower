@@ -80,7 +80,7 @@ class PantufaBot(val config: PantufaConfig) {
 	val mainLandGuild: Guild?
 		get() = jda.getGuildById(config.sparklyPower.guild.idLong)
 	val tasksScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-	val proxyRPC = ProxyRPCClient()
+	val proxyRPC = ProxyRPCClient(this)
 
 	fun start() {
 		INSTANCE = this
