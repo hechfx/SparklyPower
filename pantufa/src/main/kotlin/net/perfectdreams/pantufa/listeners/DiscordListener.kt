@@ -195,80 +195,82 @@ class DiscordListener(val m: PantufaBot) : ListenerAdapter() {
 								)
 							}
 						),
-						JSONComponentSerializer.json().serialize(
-							TextComponent {
-								for (image in imagesToBeAppended) {
-									val imageHeightStep = (0 until image.height step 4)
+						if (imagesToBeAppended.isNotEmpty()) {
+							JSONComponentSerializer.json().serialize(
+								TextComponent {
+									for (image in imagesToBeAppended) {
+										val imageHeightStep = (0 until image.height step 4)
 
-									for (y in 0 until image.height step 4) {
-										for (x in 0 until image.width) {
-											append(
-												TextComponent {
-													font(Key.key("sparklypower:chat_pixel_drawing"))
+										for (y in 0 until image.height step 4) {
+											for (x in 0 until image.width) {
+												append(
+													TextComponent {
+														font(Key.key("sparklypower:chat_pixel_drawing"))
 
-													fun getRGBIfInBounds(x: Int, y: Int): Int? {
-														return if (x in 0 until image.width && y in 0 until image.height)
-															image.getRGB(x, y)
-														else
-															null
-													}
-
-													val y1 = getRGBIfInBounds(x, y)
-													val y2 = getRGBIfInBounds(x, y + 1)
-													val y3 = getRGBIfInBounds(x, y + 2)
-													val y4 = getRGBIfInBounds(x, y + 3)
-
-													if (y1 != null) {
-														append(
-															TextComponent {
-																content("a")
-																color(TextColor.color(y1))
-															}
-														)
-													}
-
-													if (y2 != null) {
-														append(
-															TextComponent {
-																content("zb")
-																color(TextColor.color(y2))
-															}
-														)
-													}
-
-													if (y3 != null) {
-														append(
-															TextComponent {
-																content("zc")
-																color(TextColor.color(y3))
-															}
-														)
-													}
-
-													if (y4 != null) {
-														append(
-															TextComponent {
-																content("zd")
-																color(TextColor.color(y4))
-															}
-														)
-													}
-
-													append(
-														TextComponent {
-															content("x")
+														fun getRGBIfInBounds(x: Int, y: Int): Int? {
+															return if (x in 0 until image.width && y in 0 until image.height)
+																image.getRGB(x, y)
+															else
+																null
 														}
-													)
-												}
-											)
-										}
 
-										if (y != imageHeightStep.last)
-											appendNewline()
+														val y1 = getRGBIfInBounds(x, y)
+														val y2 = getRGBIfInBounds(x, y + 1)
+														val y3 = getRGBIfInBounds(x, y + 2)
+														val y4 = getRGBIfInBounds(x, y + 3)
+
+														if (y1 != null) {
+															append(
+																TextComponent {
+																	content("a")
+																	color(TextColor.color(y1))
+																}
+															)
+														}
+
+														if (y2 != null) {
+															append(
+																TextComponent {
+																	content("zb")
+																	color(TextColor.color(y2))
+																}
+															)
+														}
+
+														if (y3 != null) {
+															append(
+																TextComponent {
+																	content("zc")
+																	color(TextColor.color(y3))
+																}
+															)
+														}
+
+														if (y4 != null) {
+															append(
+																TextComponent {
+																	content("zd")
+																	color(TextColor.color(y4))
+																}
+															)
+														}
+
+														append(
+															TextComponent {
+																content("x")
+															}
+														)
+													}
+												)
+											}
+
+											if (y != imageHeightStep.last)
+												appendNewline()
+										}
 									}
 								}
-							}
-						)
+							)
+						} else null
 					)
 				)
 			}
