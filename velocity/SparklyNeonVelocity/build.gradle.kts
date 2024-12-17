@@ -42,8 +42,6 @@ dependencies {
 
 tasks {
     val shadowJar = named<ShadowJar>("shadowJar") {
-        archiveBaseName.set("SparklyNeonVelocity-shadow")
-
         dependencies {
             include {
                 it.name == "sparklypower-parent.common:rpc-payloads:unspecified"

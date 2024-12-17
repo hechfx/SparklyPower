@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     kotlin("jvm")
     kotlin("kapt") // Required for Velocity Annotations
@@ -62,4 +64,10 @@ dependencies {
     api("io.ktor:ktor-server-netty:2.3.11")
 
     kapt("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
+}
+
+tasks {
+    "build" {
+        dependsOn(shadowJar)
+    }
 }
