@@ -185,11 +185,13 @@ class DreamPvPTweaks : KotlinPlugin(), Listener {
 		e.isCancelled = e.entity.world.name in PVP_WORLDS
 	}
 
-	@EventHandler
+	// You CANNOT USE ENTITYRESSURECTEVENT!!
+	// Cancelling it causes the player to die but they DO NOT lose the items!!!
+	/* @EventHandler
 	fun onTotem(e: EntityResurrectEvent) {
 		if (e.entity.world.name in PVP_WORLDS)
 		    e.isCancelled = true
-	}
+	} */
 
 	@EventHandler
 	fun onWorldChange(e: PlayerChangedWorldEvent) {
