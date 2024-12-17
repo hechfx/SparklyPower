@@ -108,13 +108,6 @@ class DreamCaixaSecreta : KotlinPlugin() {
 				), chance
 			)
 		)
-		prizes.add(
-			RandomItem(
-				ItemStack(
-					Material.TOTEM_OF_UNDYING
-				), chance
-			)
-		)
 
 		prizes.add(
 			RandomItem(
