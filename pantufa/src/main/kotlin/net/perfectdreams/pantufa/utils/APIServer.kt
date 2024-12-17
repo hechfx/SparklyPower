@@ -19,6 +19,8 @@ import net.perfectdreams.pantufa.pantufa
 import net.perfectdreams.pantufa.rpc.*
 import net.perfectdreams.pantufa.tables.Users
 import net.perfectdreams.pantufa.utils.extensions.await
+import net.sparklypower.rpc.proxy.ProxyExecuteCommandRequest
+import net.sparklypower.rpc.proxy.ProxyExecuteCommandResponse
 
 class APIServer(private val m: PantufaBot) {
     companion object {
@@ -74,19 +76,20 @@ class APIServer(private val m: PantufaBot) {
 
                             val discordAccount = m.retrieveDiscordAccountFromUser(userId)
 
-                            fun getResponse(): BanSparklyPowerPlayerLorittaBannedResponse {
+                            suspend fun getResponse(): BanSparklyPowerPlayerLorittaBannedResponse {
                                 if (discordAccount != null && discordAccount.isConnected) {
                                     val userInfo = pantufa.getMinecraftUserFromUniqueId(discordAccount.minecraftId)
 
                                     if (userInfo != null) {
-                                        logger.info { "Banning ${discordAccount.minecraftId} because their Discord account  ${discordAccount.discordId} is banned" }
-                                        Server.PERFECTDREAMS_BUNGEE.send(
-                                            jsonObject(
-                                                "type" to "executeCommand",
-                                                "player" to "Pantufinha",
-                                                "command" to "ban ${userInfo.username} Banido da Loritta | ID da Conta no Discord: ${discordAccount.discordId} - ${request.reason}"
+                                        logger.info { "Banning ${discordAccount.minecraftId} because their Discord account ${discordAccount.discordId} is banned" }
+
+                                        m.proxyRPC.makeRPCRequest<ProxyExecuteCommandResponse>(
+                                            ProxyExecuteCommandRequest(
+                                                null,
+                                                "ban ${userInfo.username} Banido da Loritta | ID da Conta no Discord: ${discordAccount.discordId} - ${request.reason}"
                                             )
                                         )
+
                                         return BanSparklyPowerPlayerLorittaBannedResponse.Success(
                                             userInfo.id.value.toString(),
                                             userInfo.username

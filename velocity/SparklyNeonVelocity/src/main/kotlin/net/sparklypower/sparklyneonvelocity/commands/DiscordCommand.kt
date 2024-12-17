@@ -1,39 +1,43 @@
 package net.sparklypower.sparklyneonvelocity.commands
 
-import com.velocitypowered.api.command.SimpleCommand
-import com.velocitypowered.api.proxy.Player
-import com.velocitypowered.api.proxy.ProxyServer
 import net.sparklypower.common.utils.fromLegacySectionToTextComponent
-import net.sparklypower.sparklyneonvelocity.PunishmentManager
 import net.sparklypower.sparklyneonvelocity.SparklyNeonVelocity
-import net.sparklypower.sparklyneonvelocity.dao.Ban
 import net.sparklypower.sparklyneonvelocity.dao.DiscordAccount
-import net.sparklypower.sparklyneonvelocity.dao.Warn
-import net.sparklypower.sparklyneonvelocity.tables.Bans
 import net.sparklypower.sparklyneonvelocity.tables.DiscordAccounts
-import net.sparklypower.sparklyneonvelocity.tables.Warns
-import net.sparklypower.sparklyneonvelocity.utils.prettyBoolean
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandArguments
+import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandContext
+import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.SparklyCommandDeclarationWrapper
+import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.sparklyCommand
+import net.sparklypower.sparklyvelocitycore.utils.commands.executors.SparklyCommandExecutor
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.transactions.transaction
-import java.time.Instant
-import java.time.ZoneId
-import java.util.*
 
-class DiscordCommand(private val m: SparklyNeonVelocity) : SimpleCommand {
-    override fun execute(invocation: SimpleCommand.Invocation) {
-        val player = invocation.source() as Player
-        val arg0 = invocation.arguments().getOrNull(0)
-        if (arg0 == "registrar" || arg0 == "register") {
+class DiscordCommand(private val m: SparklyNeonVelocity) : SparklyCommandDeclarationWrapper {
+    override fun declaration() = sparklyCommand(listOf("discord")) {
+        executor = DiscordExecutor(m)
+
+        subcommand(listOf("register", "registrar")) {
+            executor = DiscordRegisterExecutor(m)
+        }
+
+        subcommand(listOf("unregister", "desregistrar")) {
+            executor = DiscordUnregisterExecutor(m)
+        }
+    }
+
+    class DiscordRegisterExecutor(private val m: SparklyNeonVelocity) : SparklyCommandExecutor() {
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            val player = context.requirePlayer()
+
             val account = m.pudding.transactionBlocking {
                 DiscordAccount.find { DiscordAccounts.minecraftId eq player.uniqueId }
                     .firstOrNull()
             }
 
             if (account == null) {
-                invocation.source().sendMessage("§cVocê não tem nenhum registro pendente! Use \"-registrar ${player.username}\" no nosso servidor no Discord para registrar a sua conta!".fromLegacySectionToTextComponent())
+                context.sendMessage("§cVocê não tem nenhum registro pendente! Use \"-registrar ${player.username}\" no nosso servidor no Discord para registrar a sua conta!".fromLegacySectionToTextComponent())
                 return
             }
 
@@ -50,8 +54,12 @@ class DiscordCommand(private val m: SparklyNeonVelocity) : SimpleCommand {
             m.discordAccountAssociationsWebhook.send("Conta **`${player.username}`** (`${player.uniqueId}`) foi associada a conta `${account.discordId}` (<@${account.discordId}>)")
             return
         }
+    }
 
-        if (arg0 == "desregistrar" || arg0 == "unregister") {
+    class DiscordUnregisterExecutor(private val m: SparklyNeonVelocity) : SparklyCommandExecutor() {
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            val player = context.requirePlayer()
+
             val account = m.pudding.transactionBlocking {
                 DiscordAccount.find { DiscordAccounts.minecraftId eq player.uniqueId and (DiscordAccounts.isConnected eq true) }
                     .firstOrNull()
@@ -71,7 +79,11 @@ class DiscordCommand(private val m: SparklyNeonVelocity) : SimpleCommand {
             m.discordAccountAssociationsWebhook.send("Conta **`${player.username}`** (`${player.uniqueId}`) foi desassociada da conta `${account.discordId}` (<@${account.discordId}>)")
             return
         }
+    }
 
-        invocation.source().sendMessage("§dNosso Discord! https://discord.gg/JYN6g2s".fromLegacySectionToTextComponent())
+    class DiscordExecutor(private val m: SparklyNeonVelocity) : SparklyCommandExecutor() {
+        override fun execute(context: CommandContext, args: CommandArguments) {
+            context.sendMessage("§dNosso Discord! https://discord.gg/JYN6g2s".fromLegacySectionToTextComponent())
+        }
     }
 }

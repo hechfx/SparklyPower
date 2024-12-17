@@ -7,6 +7,8 @@ import com.velocitypowered.api.proxy.Player
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.TextColor
+import net.sparklypower.common.utils.adventure.TextComponent
+import net.sparklypower.sparklyvelocitycore.utils.commands.exceptions.CommandException
 
 class CommandContext(val nmsContext: CommandContext<CommandSource>) {
     companion object {
@@ -27,17 +29,17 @@ class CommandContext(val nmsContext: CommandContext<CommandSource>) {
     /**
      * Requires that the [sender] is a Player. If it isn't, the command will [fail].
      */
-    /* fun requirePlayer(): Player {
+    fun requirePlayer(): Player {
         val s = sender
         if (s !is Player)
-            fail(
-                Component.text {
-                    it.color(TextColor.color(255, 0, 0))
-                    it.content("Apenas jogadores podem executar este comando!")
+            throw CommandException(
+                TextComponent {
+                    color(TextColor.color(255, 0, 0))
+                    content("Apenas jogadores podem executar este comando!")
                 }
             )
         return s
-    } */
+    }
 
     /**
      * Requires that the [sender] is a Console. If it isn't, the command will [fail]~.

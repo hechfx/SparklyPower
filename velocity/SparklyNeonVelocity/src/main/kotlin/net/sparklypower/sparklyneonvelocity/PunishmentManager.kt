@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 import net.sparklypower.common.utils.DateUtils
 import net.sparklypower.sparklyneonvelocity.dao.User
 import net.sparklypower.sparklyneonvelocity.tables.Users
+import net.sparklypower.sparklyneonvelocity.utils.socket.SocketServer
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -74,6 +75,7 @@ class PunishmentManager(private val m: SparklyNeonVelocity, val server: ProxySer
     fun getPunisherName(sender: CommandSource): String {
         return when (sender) {
             is Player -> sender.username
+            is SocketServer.FakeCommandPlayerSender -> sender.username
             else -> "Pantufa"
         }
     }

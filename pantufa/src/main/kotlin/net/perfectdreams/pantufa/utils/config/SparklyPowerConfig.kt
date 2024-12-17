@@ -14,7 +14,8 @@ data class SparklyPowerConfig(
         val perfectDreamsSurvivalPort: Int,
         val perfectDreamsBungeeIp: String,
         val perfectDreamsBungeePort: Int,
-        val sparklyPowerSurvival: ServerRPC
+        val sparklyPowerSurvival: ServerRPC,
+        val sparklyPowerProxy: ServerRPC
     ) {
         @Serializable
         data class ServerRPC(

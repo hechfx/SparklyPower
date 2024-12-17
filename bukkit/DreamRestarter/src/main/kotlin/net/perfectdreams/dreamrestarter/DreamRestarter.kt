@@ -1,22 +1,20 @@
 package net.perfectdreams.dreamrestarter
 
 import com.github.salomonbrys.kotson.jsonObject
-import com.github.salomonbrys.kotson.toJsonArray
 import com.okkero.skedule.schedule
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.network.DreamNetwork
-import net.perfectdreams.dreamcore.tables.Transactions.time
 import net.perfectdreams.dreamcore.utils.KotlinPlugin
 import net.perfectdreams.dreamcore.utils.scheduler
-import net.perfectdreams.dreamcore.utils.scheduler.onMainThread
 import net.perfectdreams.dreamrestarter.commands.RestartCommand
-import net.sparklypower.rpc.SparklyBungeeRequest
+import net.sparklypower.rpc.proxy.ProxyTransferPlayersRequest
+import net.sparklypower.rpc.proxy.ProxyTransferPlayersResponse
 import org.bukkit.Bukkit
 import java.io.File
-import java.time.*
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -108,13 +106,10 @@ class DreamRestarter : KotlinPlugin() {
 				storedPlayerRestart.delete()
 
 				launchAsyncThread {
-					DreamCore.INSTANCE.rpc.bungeeCord.send(
-						SparklyBungeeRequest.TransferPlayersRequest(
-							// Transfer the players to us!
-							uniqueIds.map { it.toString() },
-							SparklyBungeeRequest.TransferPlayersRequest.TransferTarget.BungeeServerNameTarget(
-								DreamCore.dreamConfig.bungeeName
-							)
+					DreamCore.INSTANCE.rpc.proxy.makeRPCRequest<ProxyTransferPlayersResponse>(
+						ProxyTransferPlayersRequest(
+							uniqueIds,
+							DreamCore.dreamConfig.bungeeName
 						)
 					)
 				}
@@ -139,13 +134,10 @@ class DreamRestarter : KotlinPlugin() {
 		)
 
 		launchAsyncThread {
-			DreamCore.INSTANCE.rpc.bungeeCord.send(
-				SparklyBungeeRequest.TransferPlayersRequest(
-					// Transfer the players to the lobby!
-					onlinePlayersUniqueIds.map { it.toString() },
-					SparklyBungeeRequest.TransferPlayersRequest.TransferTarget.BungeeServerNameTarget(
-						DreamCore.dreamConfig.servers.lobby.bungeeName
-					)
+			DreamCore.INSTANCE.rpc.proxy.makeRPCRequest<ProxyTransferPlayersResponse>(
+				ProxyTransferPlayersRequest(
+					onlinePlayersUniqueIds,
+					DreamCore.dreamConfig.servers.lobby.bungeeName
 				)
 			)
 		}

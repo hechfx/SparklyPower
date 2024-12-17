@@ -22,8 +22,10 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":common:rpc-payloads"))
     implementation(project(":common:tables"))
+    implementation(project(":common-utils"))
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("io.github.microutils:kotlin-logging:2.1.23")
+    implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 
     implementation("com.github.LorittaBot:DeviousJDA:40ea50aea7")
     implementation("club.minnced:jda-ktx:0.12.0")
@@ -68,6 +70,8 @@ dependencies {
     api("com.github.salomonbrys.kotson:kotson:2.5.0")
 
     implementation("com.github.luben:zstd-jni:1.5.5-6")
+
+    implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
 
     testImplementation(kotlin("test"))
 }

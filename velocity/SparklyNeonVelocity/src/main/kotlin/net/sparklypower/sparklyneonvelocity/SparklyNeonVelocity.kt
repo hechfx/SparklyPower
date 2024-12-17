@@ -157,26 +157,14 @@ class SparklyNeonVelocity @Inject constructor(
         server.eventManager.register(this, LoginListener(this, this.server))
         server.eventManager.register(this, ChatListener(this))
 
-        registerCommand(
-            server,
-            selfCommandMetaBuilder("premium"),
-            PremiumCommand(this)
-        )
-        registerCommand(
-            server,
-            selfCommandMetaBuilder("adminchat", "a", "ademirchat"),
-            AdminChatCommand(this, this.server)
-        )
-        registerCommand(
-            server,
-            selfCommandMetaBuilder("advdupeip", "advanceddupeip", "advancedupeip"),
-            AdvancedDupeIpCommand(this)
-        )
+        registerCommand(server, PremiumCommand(this))
+        registerCommand(server, AdminChatCommand(this, this.server))
+        registerCommand(server, AdvancedDupeIpCommand(this, this.server))
         registerCommand(server, BanCommand(this, this.server))
-        registerCommand(server, selfCommandMetaBuilder("checkban"), CheckBanCommand(this, this.server))
-        registerCommand(server, selfCommandMetaBuilder("connectionlog"), ConnectionLogCommand(this))
-        registerCommand(server, selfCommandMetaBuilder("discord"), DiscordCommand(this))
-        registerCommand(server, selfCommandMetaBuilder("dupeip"), DupeIpCommand(this, this.server))
+        registerCommand(server, CheckBanCommand(this, this.server))
+        registerCommand(server, ConnectionLogCommand(this, this.server))
+        registerCommand(server, DiscordCommand(this))
+        registerCommand(server, DupeIpCommand(this, this.server))
         registerCommand(server, selfCommandMetaBuilder("geoip"), GeoIpCommand(this))
         registerCommand(server, selfCommandMetaBuilder("ipban", "banip", "baniripwildcard"), IpBanCommand(this, this.server))
         registerCommand(server, selfCommandMetaBuilder("ipwildcardban", "banipwildcard", "baniripwildcard"), IpBanCommand(this, this.server))
@@ -185,10 +173,10 @@ class SparklyNeonVelocity @Inject constructor(
         registerCommand(server, selfCommandMetaBuilder("kick"), KickCommand(this))
         registerCommand(server, selfCommandMetaBuilder("unban"), UnbanCommand(this, this.server))
         registerCommand(server, selfCommandMetaBuilder("unwarn"), UnwarnCommand(this, this.server))
-        registerCommand(server, selfCommandMetaBuilder("warn", "avisar"), WarnCommand(this, this.server))
+        registerCommand(server, WarnCommand(this, this.server))
         registerCommand(server, selfCommandMetaBuilder("banasn"), BanASNCommand(this, this.server))
         registerCommand(server, selfCommandMetaBuilder("unbanasn"), UnbanASNCommand(this, this.server))
-        registerCommand(server, selfCommandMetaBuilder("checkandkick"), CheckAndKickCommand(this, this.server))
+        registerCommand(server, CheckAndKickCommand(this, this.server))
 
         apiServer.start()
     }

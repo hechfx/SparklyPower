@@ -59,7 +59,7 @@ class UnleashedCommandManager(val m: PantufaBot) {
 
         // ===[ Minecraft ]===
         register(RegisterCommand())
-        register(OnlineCommand())
+        register(OnlineCommand(m))
         register(VIPInfoCommand())
         register(ChatColorCommand())
         register(SparklyPlayerCommand())

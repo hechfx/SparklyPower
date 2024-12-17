@@ -12,6 +12,7 @@ import com.velocitypowered.api.command.CommandSource
 import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandArguments
 import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandContext
 import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.SparklyCommandDeclaration
+import net.sparklypower.sparklyvelocitycore.utils.commands.exceptions.CommandException
 import net.sparklypower.sparklyvelocitycore.utils.commands.options.*
 import java.util.concurrent.CompletableFuture
 
@@ -64,10 +65,10 @@ class VelocityBrigadierCommandConverter(
                 val executor = declaration.executor ?: error("I couldn't find a executor!")
                 executor.execute(context, CommandArguments(context))
             } catch (e: Throwable) {
-                /* if (e is CommandException)
+                if (e is CommandException)
                     context.sendMessage(e.component)
-                else */
-                e.printStackTrace()
+                else
+                    e.printStackTrace()
             }
 
             return@Command com.mojang.brigadier.Command.SINGLE_SUCCESS

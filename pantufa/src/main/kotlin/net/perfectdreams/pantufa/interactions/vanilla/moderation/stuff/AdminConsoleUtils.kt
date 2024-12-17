@@ -19,6 +19,8 @@ import net.perfectdreams.pantufa.utils.Emotes
 import net.perfectdreams.pantufa.api.commands.PantufaReply
 import net.perfectdreams.pantufa.utils.Server
 import net.perfectdreams.pantufa.api.commands.styled
+import net.sparklypower.rpc.proxy.ProxyExecuteCommandRequest
+import net.sparklypower.rpc.proxy.ProxyExecuteCommandResponse
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -67,34 +69,38 @@ object AdminConsoleUtils {
             }
 
             logger.info { "Executing ${context.user.id}'s command in SparklyPower's BungeeCord with Minecraft Account (${minecraftAccountInfo.uniqueId})..." }
-            val payload = server.send(
-                jsonObject(
-                    "type" to "executeCommand",
-                    "player" to minecraftAccountInfo.username,
-                    "command" to "$commandToBeExecuted ${args[options.args]}"
+
+            val response = context.pantufa.proxyRPC.makeRPCRequest<ProxyExecuteCommandResponse>(
+                ProxyExecuteCommandRequest(
+                    minecraftAccountInfo.uniqueId,
+                    "$commandToBeExecuted ${args[options.args]}"
                 )
             )
 
-            val messages = payload["messages"].array.map { it.string }
+            when (response) {
+                is ProxyExecuteCommandResponse.Success -> {
+                    val messages =  response.messages
 
-            // Now we are going to do some special checks
-            if (messages.joinToString("\n").length >= 1900) { // if it is greater than 1900, we are going to send a file
-                // (the reason it is 1900 is due to the formatting the replies do)
-                context.reply(false) {
-                    files += FileUpload.fromData(messages.joinToString("\n").toByteArray(Charsets.UTF_8), "result.txt")
-                }
-            } else {
-                var isFirst = true
+                    // Now we are going to do some special checks
+                    if (messages.joinToString("\n").length >= 1900) { // if it is greater than 1900, we are going to send a file
+                        // (the reason it is 1900 is due to the formatting the replies do)
+                        context.reply(false) {
+                            files += FileUpload.fromData(messages.joinToString("\n").toByteArray(Charsets.UTF_8), "result.txt")
+                        }
+                    } else {
+                        var isFirst = true
 
-                val replies = messages.map {
-                    val reply = PantufaReply(it, mentionUser = isFirst)
-                    isFirst = false
-                    reply
-                }
+                        val replies = messages.map {
+                            val reply = PantufaReply(it, mentionUser = isFirst)
+                            isFirst = false
+                            reply
+                        }
 
-                context.reply(false) {
-                    replies.forEach {
-                        styled(it)
+                        context.reply(false) {
+                            replies.forEach {
+                                styled(it)
+                            }
+                        }
                     }
                 }
             }

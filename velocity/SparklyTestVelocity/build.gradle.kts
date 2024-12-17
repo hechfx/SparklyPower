@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    kotlin("kapt") // Required for Velocity Annotations
     `java-library`
     id("com.gradleup.shadow") version "9.0.0-beta4"
     kotlin("plugin.serialization")
@@ -19,7 +20,9 @@ kotlin {
 
 dependencies {
     compileOnlyApi(project(":velocity:SparklyVelocityCore"))
-
     compileOnlyApi("com.velocitypowered:velocity-api:3.4.0-sparklyvelocity-SNAPSHOT")
     compileOnlyApi("com.velocitypowered:velocity-proxy:3.4.0-sparklyvelocity-SNAPSHOT")
+    compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
+
+    kapt("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
 }

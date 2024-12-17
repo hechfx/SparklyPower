@@ -16,6 +16,7 @@ import net.sparklypower.sparklyneonvelocity.dao.IpBan
 import net.sparklypower.sparklyneonvelocity.dao.User
 import net.sparklypower.sparklyneonvelocity.tables.ConnectionLogEntries
 import net.sparklypower.sparklyneonvelocity.tables.PremiumUsers
+import net.sparklypower.sparklyneonvelocity.utils.socket.SocketServer
 import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandArguments
 import net.sparklypower.sparklyvelocitycore.utils.commands.context.CommandContext
 import net.sparklypower.sparklyvelocitycore.utils.commands.declarations.SparklyCommandDeclaration
@@ -50,7 +51,7 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
                     server.allPlayers.map { it.username }
                 }
             )
-            
+
             val reason = optionalGreedyString("reason")
         }
 
@@ -58,11 +59,8 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
 
         override fun execute(context: CommandContext, args: CommandArguments) {
             val playerName = args[options.playerName]
+            val sender = context.sender
 
-            if (playerName == null) {
-                context.sendMessage("§cUse /ban jogador motivo".fromLegacySectionToTextComponent())
-                return
-            }
             val reason =  args[options.reason]?.ifEmpty { null }
 
             val (punishedDisplayName, punishedUniqueId, player) = m.punishmentManager.getPunishedInfoByString(playerName) ?: run {
@@ -125,7 +123,11 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
                     IpBan.new {
                         this.ip = ip
 
-                        this.punishedBy = (context as? Player)?.uniqueId
+                        this.punishedBy = when (sender) {
+                            is Player -> sender.uniqueId
+                            is SocketServer.FakeCommandPlayerSender -> sender.uniqueId
+                            else -> null
+                        }
                         this.punishedAt = System.currentTimeMillis()
                         this.reason = effectiveReason
 
@@ -138,7 +140,11 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
 
                 Ban.new {
                     this.player = punishedUniqueId!!
-                    this.punishedBy = (context as? Player)?.uniqueId
+                    this.punishedBy = when (sender) {
+                        is Player -> sender.uniqueId
+                        is SocketServer.FakeCommandPlayerSender -> sender.uniqueId
+                        else -> null
+                    }
                     this.punishedAt = System.currentTimeMillis()
                     this.reason = effectiveReason
 
@@ -154,7 +160,11 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
                     IpBan.new {
                         this.ip = ip
 
-                        this.punishedBy = (context as? Player)?.uniqueId
+                        this.punishedBy = when (sender) {
+                            is Player -> sender.uniqueId
+                            is SocketServer.FakeCommandPlayerSender -> sender.uniqueId
+                            else -> null
+                        }
                         this.punishedAt = System.currentTimeMillis()
                         this.reason = effectiveReason
                         this.temporary = true
@@ -181,7 +191,7 @@ class BanCommand(private val m: SparklyNeonVelocity, private val server: ProxySe
                 "Banido ${if (temporary) "Temporariamente" else "Permanentemente"}",
                 punisherDisplayName,
                 effectiveReason,
-                (context as? Player)?.currentServer?.getOrNull()?.server?.serverInfo?.name,
+                (context.sender as? Player)?.currentServer?.getOrNull()?.server?.serverInfo?.name,
                 null
             )
 

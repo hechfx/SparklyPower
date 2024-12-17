@@ -10,16 +10,13 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.sparklypower.rpc.SparklyBungeeRequest
-import net.sparklypower.rpc.SparklyBungeeResponse
-import net.sparklypower.rpc.VelocityPlayerGeyserResponse
+import net.sparklypower.rpc.proxy.*
 import net.sparklypower.sparklyneonvelocity.SparklyNeonVelocity
-import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 class APIServer(private val plugin: SparklyNeonVelocity, private val velocityServer: ProxyServer) {
     private val logger = plugin.logger
     private var server: ApplicationEngine? = null
+    val processors = Processors(plugin, velocityServer)
 
     fun start() {
         logger.info { "Starting HTTP Server..." }
@@ -32,61 +29,19 @@ class APIServer(private val plugin: SparklyNeonVelocity, private val velocitySer
                 post("/rpc") {
                     val jsonPayload = call.receiveText()
                     logger.info { "${call.request.userAgent()} sent a RPC request: $jsonPayload" }
-                    val response = when (val request = Json.decodeFromString<SparklyBungeeRequest>(jsonPayload)) {
-                        is SparklyBungeeRequest.GetOnlinePlayersRequest -> SparklyBungeeResponse.GetOnlinePlayersResponse(
-                            velocityServer.allServers.associate {
-                                it.serverInfo.name to it.playersConnected.map { player ->
-                                    SparklyBungeeResponse.GetOnlinePlayersResponse.ProxyPlayer(
-                                        player.username,
-                                        player.effectiveLocale?.toString() ?: "???",
-                                        player.ping.toInt(),
-                                        false
-                                    )
-                                }
-                            }
-                        )
 
-                        is SparklyBungeeRequest.TransferPlayersRequest -> {
-                            val serverInfo = when (val target = request.transferTarget) {
-                                is SparklyBungeeRequest.TransferPlayersRequest.TransferTarget.BungeeServerAddressTarget -> {
-                                    TODO("You cannot move to a non-registered server!")
-                                }
-                                is SparklyBungeeRequest.TransferPlayersRequest.TransferTarget.BungeeServerNameTarget -> {
-                                    velocityServer.getServer(target.name).get()
-                                }
-                            }
-
-                            val players = request.playerIds.mapNotNull { velocityServer.getPlayer(UUID.fromString(it)).getOrNull() }
-
-                            for (player in players) {
-                                player.createConnectionRequest(serverInfo).fireAndForget()
-                            }
-
-                            val playersNotFound = request.playerIds.filter { it !in players.map { it.uniqueId.toString() } }
-
-                            SparklyBungeeResponse.TransferPlayersResponse.Success(playersNotFound)
-                        }
+                    val response = when (val request = Json.decodeFromString<ProxyRPCRequest>(jsonPayload)) {
+                        is ProxyGeyserStatusRequest -> processors.proxyGeyserStatusProcessor.process(call, request)
+                        is ProxyGetProxyOnlinePlayersRequest -> processors.proxyGetOnlinePlayersProcessor.process(call, request)
+                        is ProxyTransferPlayersRequest -> processors.proxyTransferPlayersProcessor.process(call, request)
+                        is ProxySendAdminChatRequest -> processors.proxySendAdminChatProcessor.process(call, request)
+                        is ProxyExecuteCommandRequest -> processors.proxyExecuteCommandProcessor.process(call, request)
                     }
 
                     call.respondText(
-                        Json.encodeToString<SparklyBungeeResponse>(response),
+                        Json.encodeToString<ProxyRPCResponse>(response),
                         ContentType.Application.Json
                     )
-                }
-
-                get("/players/{playerUniqueId}/geyser") {
-                    val playerUniqueId = UUID.fromString(call.parameters["playerUniqueId"])
-
-                    val player = velocityServer.getPlayer(playerUniqueId).getOrNull()
-
-                    if (player == null) {
-                        call.respondText(Json.encodeToString<VelocityPlayerGeyserResponse>(VelocityPlayerGeyserResponse.UnknownPlayer))
-                        return@get
-                    }
-
-                    val isGeyser = plugin.isGeyser(player)
-
-                    call.respondText(Json.encodeToString<VelocityPlayerGeyserResponse>(VelocityPlayerGeyserResponse.Success(isGeyser)))
                 }
             }
         }

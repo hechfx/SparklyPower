@@ -171,19 +171,6 @@ class SocketServer(val m: SparklyNeonVelocity, val server: ProxyServer, val sock
 										it.sendMessage(text.fromLegacySectionToTextComponent())
 									}
 							}
-							"executeCommand" -> {
-								val player = jsonObject["player"].string
-								val command = jsonObject["command"].string
-
-								val commandSender = FakeCommandSender(player)
-
-								m.logger.info { "Dispatching command $command by $player!" }
-
-								server.commandManager.executeAsync(commandSender, command).get()
-
-								m.logger.info { "Command Output is ${commandSender.output}" }
-								response["messages"] = commandSender.output.toJsonArray()
-							}
 							"transferPlayersByUUID" -> {
 								// Transfere vários players para outro servidor
 								// players: nomes de jogadores
@@ -248,7 +235,7 @@ class SocketServer(val m: SparklyNeonVelocity, val server: ProxyServer, val sock
 		this.listener?.close()
 	}
 
-	class FakeCommandSender(val playerName: String) : CommandSource {
+	open class FakeCommandSender : CommandSource {
 		val output = mutableListOf<String>()
 
 		override fun getPermissionValue(permission: String) = Tristate.TRUE
@@ -257,4 +244,9 @@ class SocketServer(val m: SparklyNeonVelocity, val server: ProxyServer, val sock
 			output.add(PlainTextComponentSerializer.plainText().serialize(message))
 		}
 	}
+
+	class FakeCommandPlayerSender(
+		val username: String,
+		val uniqueId: UUID
+	) : FakeCommandSender()
 }

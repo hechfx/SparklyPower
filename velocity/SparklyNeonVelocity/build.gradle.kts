@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm")
+    kotlin("kapt") // Required for Velocity Annotations
     `java-library`
     id("com.gradleup.shadow") version "9.0.0-beta4"
     kotlin("plugin.serialization")
@@ -32,16 +33,21 @@ val shadowWithRuntimeDependencies by configurations.creating {
 }
 
 dependencies {
+    implementation(project(":common:rpc-payloads"))
     compileOnlyApi(project(":velocity:SparklyVelocityCore"))
+    compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
+    compileOnly("net.luckperms:api:5.4")
+    kapt("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
 }
-
 
 tasks {
     val shadowJar = named<ShadowJar>("shadowJar") {
         archiveBaseName.set("SparklyNeonVelocity-shadow")
 
-        exclude {
-            it?.file?.name?.startsWith("patched_") == true
+        dependencies {
+            include {
+                it.name == "sparklypower-parent.common:rpc-payloads:unspecified"
+            }
         }
     }
 
