@@ -16,6 +16,7 @@ dependencies {
     compileOnly(project(":bukkit:DreamCore"))
     compileOnly(project(":bukkit:DreamVanish"))
     compileOnly(project(":bukkit:DreamJetpack"))
+    compileOnly(project(":bukkit:DreamBedrockIntegrations"))
 }
 
 kotlin {

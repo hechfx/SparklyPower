@@ -3,6 +3,8 @@ package net.perfectdreams.dreamenchant.utils
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import net.perfectdreams.dreambedrockintegrations.utils.BedrockDreamMenuUtils
+import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.utils.SparklyNamespacedKey
 import net.perfectdreams.dreamenchant.DreamEnchant
 import org.bukkit.block.Block
@@ -58,7 +60,10 @@ class SpawnEnchantmentTable(val m: DreamEnchant) : SpecialEnchantmentTable() {
             this::openEnchantmentCreditsInventory
         )
 
-        menu.sendTo(player)
+        if (player.isBedrockClient)
+            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, menu, player)
+        else
+            menu.sendTo(player)
     }
 
     private fun openEnchantmentCreditsInventory(player: Player, clickedBlock: Block, page: Int) {
@@ -75,7 +80,10 @@ class SpawnEnchantmentTable(val m: DreamEnchant) : SpecialEnchantmentTable() {
             }
         }
 
-        menu.sendTo(player)
+        if (player.isBedrockClient)
+            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, menu, player)
+        else
+            menu.sendTo(player)
     }
 
     private fun <T> getCreditsMapFromSpawnEnchantmentTable(block: Block, callback: (MutableMap<String, Int>) -> (T)): T {

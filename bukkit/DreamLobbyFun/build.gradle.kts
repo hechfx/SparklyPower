@@ -10,6 +10,7 @@ dependencies {
     paperweight.devBundle("net.sparklypower.sparklypaper", "1.21.3-R0.1-SNAPSHOT")
     compileOnly(project(":bukkit:DreamCore"))
     compileOnly(project(":bukkit:DreamAuth"))
+    compileOnly(project(":bukkit:DreamBedrockIntegrations"))
     compileOnly(files("../../libs/NoteBlockAPI.jar"))
 }
 

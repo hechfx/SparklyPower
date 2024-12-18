@@ -8,6 +8,7 @@ import net.luckperms.api.LuckPermsProvider
 import net.luckperms.api.node.types.InheritanceNode
 import net.perfectdreams.commands.annotation.Subcommand
 import net.perfectdreams.commands.bukkit.SparklyCommand
+import net.perfectdreams.dreambedrockintegrations.utils.BedrockDreamMenuUtils
 import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcash.DreamCash
 import net.perfectdreams.dreamcash.utils.Cash
@@ -19,6 +20,7 @@ import net.perfectdreams.dreamcore.utils.adventure.appendTextComponent
 import net.perfectdreams.dreamcore.utils.adventure.displayNameWithoutDecorations
 import net.perfectdreams.dreamcore.utils.adventure.lore
 import net.perfectdreams.dreamcore.utils.extensions.meta
+import net.perfectdreams.dreamcore.utils.scheduler.delayTicks
 import net.perfectdreams.dreamcore.utils.scheduler.onMainThread
 import net.perfectdreams.dreamloja.DreamLoja
 import net.perfectdreams.dreamloja.tables.ShopWarpUpgrades
@@ -252,7 +254,7 @@ class LojaCashCommand(val m: DreamCash) : SparklyCommand(arrayOf("lojacash", "ca
                                             .meta<ItemMeta> {
                                                 displayNameWithoutDecorations {
                                                     color(NamedTextColor.GREEN)
-                                                    append("Comprar - $days dias")
+                                                    append("Comprar - $days dias ($realPriceInPesadelos pesadelos)")
                                                     append(" ")
                                                     if (discount != 0) {
                                                         appendTextComponent {
@@ -337,7 +339,11 @@ class LojaCashCommand(val m: DreamCash) : SparklyCommand(arrayOf("lojacash", "ca
                             }
                         }
 
-                        menu.sendTo(sender)
+                        if (sender.isBedrockClient) {
+                            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, menu, sender)
+                        } else {
+                            menu.sendTo(sender)
+                        }
                     }
                 }
             }

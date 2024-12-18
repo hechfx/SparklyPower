@@ -14,6 +14,8 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.InboundConnection
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
+import com.velocitypowered.api.proxy.messages.ChannelIdentifier
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import com.velocitypowered.api.util.Favicon
 import com.velocitypowered.proxy.VelocityServer
 import com.velocitypowered.proxy.connection.client.LoginInboundConnection
@@ -132,6 +134,13 @@ class SparklyNeonVelocity @Inject constructor(
         // onEnable is handled by SparklyVelocityCore, onEnable and onDisable are called on plugin load/unload/reload
         loadFavicons()
         asnManager.load()
+
+        // Fakegate - Using Floodgate features without actually using Floodgate
+        // There are some Floodgate features that we want to use, but we don't want to use Floodgate's authentication, and
+        // Floodgate does not work on SparklyVelocity (due to the multiple listeners feature)
+        //
+        // To let us use Floodgate's features on the backend, we need to manually register the channels here!
+        server.channelRegistrar.register(MinecraftChannelIdentifier.from("floodgate:form"))
 
         if (config.socketPort != null) {
             val socketServer = SocketServer(this, server, config.socketPort)

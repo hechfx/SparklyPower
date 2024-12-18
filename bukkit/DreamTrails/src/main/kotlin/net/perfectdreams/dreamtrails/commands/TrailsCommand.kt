@@ -2,6 +2,8 @@ package net.perfectdreams.dreamtrails.commands
 
 import net.perfectdreams.commands.annotation.Subcommand
 import net.perfectdreams.commands.bukkit.SparklyCommand
+import net.perfectdreams.dreambedrockintegrations.utils.BedrockDreamMenuUtils
+import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.extensions.meta
 import net.perfectdreams.dreamtrails.DreamTrails
@@ -79,7 +81,7 @@ class TrailsCommand(val m: DreamTrails) : SparklyCommand(arrayOf("trails", "trai
                     player.inventory
                         .addItem(
                             ItemStack(Material.LEATHER_LEGGINGS)
-                                .rename("§d§Calça Fashion")
+                                .rename("§d§lCalça Fashion")
                                 .lore(
                                     "§7Seja §b§lVIP§e+§7, coloque nas calças e seja fashion amigxxx!"
                                 )
@@ -122,7 +124,11 @@ class TrailsCommand(val m: DreamTrails) : SparklyCommand(arrayOf("trails", "trai
             }
         }
 
-        chooseTrailMenu.sendTo(player)
+        if (player.isBedrockClient) {
+            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, chooseTrailMenu, player)
+        } else {
+            chooseTrailMenu.sendTo(player)
+        }
     }
 
     private fun openMoveTrailMenu(player: Player) {
@@ -151,7 +157,11 @@ class TrailsCommand(val m: DreamTrails) : SparklyCommand(arrayOf("trails", "trai
             }
         }
 
-        trailMenu.sendTo(player)
+        if (player.isBedrockClient) {
+            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, trailMenu, player)
+        } else {
+            trailMenu.sendTo(player)
+        }
     }
 
     private fun DreamMenuSlotBuilder.onMoveTrailClick(player: Player, trail: TrailData) {
@@ -205,7 +215,11 @@ class TrailsCommand(val m: DreamTrails) : SparklyCommand(arrayOf("trails", "trai
             }
         }
 
-        haloMenu.sendTo(player)
+        if (player.isBedrockClient) {
+            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, haloMenu, player)
+        } else {
+            haloMenu.sendTo(player)
+        }
     }
 
     private fun DreamMenuSlotBuilder.onHaloClick(player: Player, halo: Halo) {

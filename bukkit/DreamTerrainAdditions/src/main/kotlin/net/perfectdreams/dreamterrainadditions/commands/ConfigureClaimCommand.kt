@@ -2,6 +2,8 @@ package net.perfectdreams.dreamterrainadditions.commands
 
 import com.destroystokyo.paper.profile.ProfileProperty
 import me.ryanhamshire.GriefPrevention.GriefPrevention
+import net.perfectdreams.dreambedrockintegrations.utils.BedrockDreamMenuUtils
+import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.utils.commands.DSLCommandBase
 import net.perfectdreams.dreamcore.utils.createMenu
 import net.perfectdreams.dreamcore.utils.extensions.meta
@@ -28,16 +30,15 @@ object ConfigureClaimCommand : DSLCommandBase<DreamTerrainAdditions> {
                 val claimAdditions = plugin.getOrCreateClaimAdditionsWithId(claim.id)
 
                 val menu = createMenu(45, "§cConfiguração do terreno") {
-
                     slot(1, 1) {
                         item = ItemStack(Material.TNT)
                             .meta<ItemMeta> {
                                 this.addItemFlags(ItemFlag.HIDE_ENCHANTS)
 
                                 if (claim.areExplosivesAllowed) {
-                                    setDisplayName("§cDesativar explosões no terreno")
+                                    setDisplayName("§c§lDesativar explosões no terreno")
                                 } else {
-                                    setDisplayName("§aAtivar explosões no terreno")
+                                    setDisplayName("§a§lAtivar explosões no terreno")
                                 }
 
                                 lore = listOf(
@@ -224,7 +225,7 @@ object ConfigureClaimCommand : DSLCommandBase<DreamTerrainAdditions> {
                                 if (claimAdditions.blockAllPlayersExceptTrusted) {
                                     setDisplayName("§a§lPermitir que outros membros entrem no terreno")
                                 } else {
-                                    setDisplayName("§b§Bloquear que outros membros entrem no terreno")
+                                    setDisplayName("§b§lBloquear que outros membros entrem no terreno")
                                 }
 
                                 lore = listOf(
@@ -246,7 +247,7 @@ object ConfigureClaimCommand : DSLCommandBase<DreamTerrainAdditions> {
                                 if (claimAdditions.blockJetpacks == DreamTerrainAdditions.ClaimAdditionsData.JetpackBlockLevel.ALLOW_ONLY_TRUSTED) {
                                     setDisplayName("§a§lPermitir que usem Jetpack no terreno")
                                 } else {
-                                    setDisplayName("§b§Bloquear que usem Jetpack no terreno")
+                                    setDisplayName("§b§lBloquear que usem Jetpack no terreno")
                                 }
 
                                 lore = listOf(
@@ -366,7 +367,15 @@ object ConfigureClaimCommand : DSLCommandBase<DreamTerrainAdditions> {
                     }
                 }
 
-                menu.sendTo(player)
+                if (player.isBedrockClient) {
+                    BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(
+                        plugin,
+                        menu,
+                        player
+                    )
+                } else {
+                    menu.sendTo(player)
+                }
             } else {
                 player.sendMessage("§cVocê não possui permissão para configurar este claim! Peça para que o dono do claim te dê permissão para configurar utilizando o comando §6/permissiontrust§c.")
             }

@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm")
     id("io.papermc.paperweight.userdev")
+    id("com.gradleup.shadow") version "9.0.0-beta4"
 }
 
 repositories {
@@ -17,11 +19,26 @@ dependencies {
     compileOnly(project(":bukkit:DreamCore"))
     compileOnly("fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
+    api("org.geysermc.cumulus:cumulus:1.1.2")
 }
 
 kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+tasks {
+    val shadowJar = named<ShadowJar>("shadowJar") {
+        dependencies {
+            include {
+                it.name == "org.geysermc.cumulus:cumulus:1.1.2"
+            }
+        }
+    }
+
+    "build" {
+        dependsOn(shadowJar)
     }
 }
 

@@ -1,6 +1,8 @@
 package net.perfectdreams.dreamenchant.utils
 
 import me.ryanhamshire.GriefPrevention.GriefPrevention
+import net.perfectdreams.dreambedrockintegrations.utils.BedrockDreamMenuUtils
+import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.utils.SparklyNamespacedKey
 import net.perfectdreams.dreamenchant.DreamEnchant
 import org.bukkit.block.Block
@@ -55,7 +57,10 @@ class PlayerEnchantmentTable(val m: DreamEnchant) : SpecialEnchantmentTable() {
             this::openEnchantmentCreditsInventory
         )
 
-        menu.sendTo(player)
+        if (player.isBedrockClient)
+            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, menu, player)
+        else
+            menu.sendTo(player)
     }
 
     private fun openEnchantmentCreditsInventory(player: Player, clickedBlock: Block, page: Int) {
@@ -78,8 +83,10 @@ class PlayerEnchantmentTable(val m: DreamEnchant) : SpecialEnchantmentTable() {
             }
         }
 
-
-        menu.sendTo(player)
+        if (player.isBedrockClient)
+            BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, menu, player)
+        else
+            menu.sendTo(player)
     }
 
     private fun <T> getCreditsMapFromSuperEnchantmentTable(block: Block, callback: (Int) -> (Pair<Int, T>)): T {

@@ -63,7 +63,7 @@ class APIServer(private val plugin: SparklyDreamer) {
         private const val PANTUFA_PRINT_SHOP_MAP_PESADELOS_COST = 15L
     }
     private val logger = plugin.logger
-    private var server: ApplicationEngine? = null
+    private var server: EmbeddedServer<*, *>? = null
     private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     private val totalSonecasGauge: AtomicDouble? = appMicrometerRegistry.gauge("sparklypower.total_sonecas", AtomicDouble(0.0))
     private val totalCashGauge: AtomicDouble? = appMicrometerRegistry.gauge("sparklypower.total_cash", AtomicDouble(0.0))

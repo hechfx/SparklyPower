@@ -4,6 +4,8 @@ import com.github.salomonbrys.kotson.jsonObject
 import com.okkero.skedule.SynchronizationContext
 import com.okkero.skedule.schedule
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent
+import net.perfectdreams.dreambedrockintegrations.DreamBedrockIntegrations
+import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.network.DreamNetwork
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.extensions.meta
@@ -26,6 +28,8 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
+import org.geysermc.cumulus.form.SimpleForm
+import org.geysermc.cumulus.response.result.ValidFormResponseResult
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
@@ -109,111 +113,149 @@ class InventoryListener(val m: DreamLobbyFun) : Listener {
 			if (m.teleportToLoginLocationIfNotLoggedIn(e.player as Player))
 				return
 
-			val inventory = Bukkit.createInventory(ServerSelectorHolder(), 45, "§a§lEscolha um Servidor!")
+			if (e.player.isBedrockClient) {
+				val bedrockIntegrations = (Bukkit.getPluginManager().getPlugin("DreamBedrockIntegrations") as DreamBedrockIntegrations)
 
-			val outline = listOf(
-				0,
-				9,
-				18,
-				27,
-				36,
-				37,
-				38,
-				39,
-				40,
-				41,
-				42,
-				43,
-				44,
-				35,
-				26,
-				17,
-				8,
-				7,
-				6,
-				5,
-				4,
-				3,
-				2,
-				1
-			)
-
-			var lastCycle: CycleGlass? = null
-			val slots = mutableMapOf<Int, CycleGlass>()
-
-			for (slot in outline) {
-				val glass = CycleGlass()
-				if (lastCycle != null) {
-					glass.damageValue = lastCycle.damageValue
-				}
-				glass.next()
-				slots[slot] = glass
-				lastCycle = glass
-			}
-
-			clicker.openInventory(inventory)
-
-			scheduler().schedule(m) {
-				while (true) {
-					if (!clicker.isValid)
-						return@schedule
-
-					if (clicker.openInventory?.topInventory != inventory)
-						return@schedule
-
-					for ((slot, glass) in slots) {
-						inventory.setItem(slot, ItemStack(glass.next(), 1))
-					}
-					waitFor(4)
-				}
-			}
-
-			var blink = false
-
-			scheduler().schedule(m) {
-				while (true) {
-					if (!clicker.isValid)
-						return@schedule
-
-					if (clicker.openInventory?.topInventory != inventory)
-						return@schedule
-
-					run {
-						var survival = ItemStack(Material.DIAMOND_PICKAXE)
-						survival.addEnchantment(Enchantment.EFFICIENCY, 1)
-						survival.addFlag(ItemFlag.HIDE_ENCHANTS)
-						survival.rename("§6✪ §a§lSparklyPower Survival §6✪")
-
-						// if (survivalPlayers != -1) {
-						survival.lore(
-							"§a${if (blink) "  " else "➤"} Clique para entrar!",
-							"§a§l» §r§aAtualmente com §b${DreamLobbyFun.SERVER_ONLINE_COUNT["sparklypower_survival"]} players §aconectados!",
-							"§7",
-							"§7O Melhor Servidor Survival do Brasil, Sem Exceções.",
-							"§7",
-							"§7Desde 2014 trazendo experiências inovadoras que jamais",
-							"§7foram vistas antes em outros servidores.",
-							"§7",
-							"§7Afinal, em qual servidor você já viu jetpacks, coxinhas, fuscas, e muito mais?",
-							"§7",
-							"§7...e ainda por cima é o servidor oficial da Loritta!",
-							"§7",
-							"§7Entre agora... porque só falta você!"
+				m.launchMainThread {
+					val bedrockServers = mutableListOf<BedrockServer>(
+						BedrockServer(
+							"§4§lSparkly§b§lPower §a§lSurvival",
+							"sparklypower_survival"
 						)
-						// } else {
-						// 	survival.lore("§c${if (blink) "  " else "✖"} Servidor offline...", "§c§l» §r§cDesculpe pela inconveniência... :(", "§7", "§7Em breve... ;)")
-						// }
+					)
 
-						survival = survival.addFlag(ItemFlag.HIDE_ATTRIBUTES)
-							.meta<ItemMeta> {
-								this.persistentDataContainer.set(DreamLobbyFun.ITEM_INFO_KEY, "transferTo:sparklypower_survival")
+					bedrockIntegrations.sendSimpleForm(
+						e.player,
+						SimpleForm.builder()
+							.title("Escolha um Servidor!")
+							.apply {
+								bedrockServers.forEach {
+									button(it.name)
+								}
 							}
+							.resultHandler { t, u ->
+								if (u is ValidFormResponseResult) {
+									val targetButton = bedrockServers[u.response().clickedButtonId()]
 
-						inventory.setItem(22, survival)
+									DreamNetwork.PERFECTDREAMS_BUNGEE.sendAsync(
+										jsonObject(
+											"type" to "transferPlayer",
+											"player" to e.player.name,
+											"bungeeServer" to targetButton.server
+										)
+									)
+								}
+							}
+							.build()
+					)
+				}
+			} else {
+				val inventory = Bukkit.createInventory(ServerSelectorHolder(), 45, "§a§lEscolha um Servidor!")
+
+				val outline = listOf(
+					0,
+					9,
+					18,
+					27,
+					36,
+					37,
+					38,
+					39,
+					40,
+					41,
+					42,
+					43,
+					44,
+					35,
+					26,
+					17,
+					8,
+					7,
+					6,
+					5,
+					4,
+					3,
+					2,
+					1
+				)
+
+				var lastCycle: CycleGlass? = null
+				val slots = mutableMapOf<Int, CycleGlass>()
+
+				for (slot in outline) {
+					val glass = CycleGlass()
+					if (lastCycle != null) {
+						glass.damageValue = lastCycle.damageValue
 					}
+					glass.next()
+					slots[slot] = glass
+					lastCycle = glass
+				}
 
-					blink = !blink
-					waitFor(10)
+				clicker.openInventory(inventory)
+
+				scheduler().schedule(m) {
+					while (true) {
+						if (!clicker.isValid)
+							return@schedule
+
+						if (clicker.openInventory?.topInventory != inventory)
+							return@schedule
+
+						for ((slot, glass) in slots) {
+							inventory.setItem(slot, ItemStack(glass.next(), 1))
+						}
+						waitFor(4)
+					}
+				}
+
+				var blink = false
+
+				scheduler().schedule(m) {
+					while (true) {
+						if (!clicker.isValid)
+							return@schedule
+
+						if (clicker.openInventory?.topInventory != inventory)
+							return@schedule
+
+						run {
+							var survival = ItemStack(Material.DIAMOND_PICKAXE)
+							survival.addEnchantment(Enchantment.EFFICIENCY, 1)
+							survival.addFlag(ItemFlag.HIDE_ENCHANTS)
+							survival.rename("§6✪ §a§lSparklyPower Survival §6✪")
+
+							// if (survivalPlayers != -1) {
+							survival.lore(
+								"§a${if (blink) "  " else "➤"} Clique para entrar!",
+								"§a§l» §r§aAtualmente com §b${DreamLobbyFun.SERVER_ONLINE_COUNT["sparklypower_survival"]} players §aconectados!",
+								"§7",
+								"§7O Melhor Servidor Survival do Brasil, Sem Exceções.",
+								"§7",
+								"§7Desde 2014 trazendo experiências inovadoras que jamais",
+								"§7foram vistas antes em outros servidores.",
+								"§7",
+								"§7Afinal, em qual servidor você já viu jetpacks, coxinhas, fuscas, e muito mais?",
+								"§7",
+								"§7...e ainda por cima é o servidor oficial da Loritta!",
+								"§7",
+								"§7Entre agora... porque só falta você!"
+							)
+							// } else {
+							// 	survival.lore("§c${if (blink) "  " else "✖"} Servidor offline...", "§c§l» §r§cDesculpe pela inconveniência... :(", "§7", "§7Em breve... ;)")
+							// }
+
+							survival = survival.addFlag(ItemFlag.HIDE_ATTRIBUTES)
+								.meta<ItemMeta> {
+									this.persistentDataContainer.set(DreamLobbyFun.ITEM_INFO_KEY, "transferTo:sparklypower_survival")
+								}
+
+							inventory.setItem(22, survival)
+						}
+
+						blink = !blink
+						waitFor(10)
+					}
 				}
 			}
 			return
@@ -261,4 +303,9 @@ class InventoryListener(val m: DreamLobbyFun) : Listener {
 			}
 		}
 	}
+
+	data class BedrockServer(
+		val name: String,
+		val server: String
+	)
 }

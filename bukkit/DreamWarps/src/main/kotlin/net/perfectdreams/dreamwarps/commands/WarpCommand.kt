@@ -1,5 +1,7 @@
 package net.perfectdreams.dreamwarps.commands
 
+import net.perfectdreams.dreambedrockintegrations.utils.BedrockDreamMenuUtils
+import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.utils.TextUtils
 import net.perfectdreams.dreamcore.utils.commands.context.CommandArguments
 import net.perfectdreams.dreamcore.utils.commands.context.CommandContext
@@ -33,7 +35,11 @@ class WarpCommand(val m: DreamWarps) : SparklyCommandDeclarationWrapper {
 			val name = args[options.warpName]
 
 			if (name == null) {
-				m.warpsMenu.sendTo(player)
+				if (player.isBedrockClient) {
+					BedrockDreamMenuUtils.convertDreamMenuToFormMenuAndSend(m, m.warpsMenu, player)
+				} else {
+					m.warpsMenu.sendTo(player)
+				}
 				return
 			}
 

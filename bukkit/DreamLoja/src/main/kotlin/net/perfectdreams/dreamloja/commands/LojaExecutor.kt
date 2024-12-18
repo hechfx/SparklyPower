@@ -1,14 +1,15 @@
 package net.perfectdreams.dreamloja.commands
 
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.perfectdreams.dreambedrockintegrations.DreamBedrockIntegrations
+import net.perfectdreams.dreambedrockintegrations.utils.isBedrockClient
 import net.perfectdreams.dreamcore.dao.User
 import net.perfectdreams.dreamcore.tables.Users
 import net.perfectdreams.dreamcore.utils.*
 import net.perfectdreams.dreamcore.utils.adventure.append
-import net.perfectdreams.dreamcore.utils.adventure.sendTextComponent
 import net.perfectdreams.dreamcore.utils.commands.context.CommandArguments
 import net.perfectdreams.dreamcore.utils.commands.context.CommandContext
-import net.perfectdreams.dreamcore.utils.commands.executors.SparklyCommandExecutor
 import net.perfectdreams.dreamcore.utils.commands.options.CommandOptions
 import net.perfectdreams.dreamcore.utils.exposed.ilike
 import net.perfectdreams.dreamcore.utils.extensions.isUnsafe
@@ -20,9 +21,13 @@ import net.perfectdreams.dreamloja.tables.Shops
 import net.perfectdreams.dreamloja.tables.UserShopVotes
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.Particle
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.jetbrains.exposed.sql.*
+import org.geysermc.cumulus.form.SimpleForm
+import org.geysermc.cumulus.response.result.ValidFormResponseResult
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.innerJoin
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class LojaExecutor(m: DreamLoja) : LojaExecutorBase(m) {
@@ -74,31 +79,19 @@ class LojaExecutor(m: DreamLoja) : LojaExecutorBase(m) {
 
                 if (playerShops.size > 1 && shopName == null) {
                     onMainThread {
-                        val menu = createMenu(InventoryUtils.roundToNearestMultipleOfNine(playerShops.size).coerceAtLeast(9), "§a§lLojas de $ownerName") {
-                            // Map it down to our inventory maps, split over to 9 first tho
-                            playerShops.chunked(9)
-                                .forEachIndexed { yIndex, shops ->
-                                    val charMap = DreamLoja.INVENTORY_POSITIONS_MAPS[shops.size] ?: "XXXXXXXXX" // fallback
-
-                                    var shopIndex = 0
-                                    for ((xIndex, char) in charMap.withIndex()) {
-                                        if (char == 'X') {
-                                            val shop = shops.getOrNull(shopIndex++) ?: break // If there isn't enough shops, break out!
-                                            slot(xIndex, yIndex) {
-                                                item = shop.iconItemStack?.let { ItemUtils.deserializeItemFromBase64(it) } ?: ItemStack(Material.DIAMOND_BLOCK)
-                                                    .rename("§a${shop.shopName}")
-
-                                                onClick {
-                                                    player.closeInventory()
-                                                    Bukkit.dispatchCommand(player, "loja $ownerName ${shop.shopName}")
-                                                }
-                                            }
-                                        }
-                                    }
-                            }
+                        if (!player.isBedrockClient) {
+                            createAndSendMenuJava(
+                                player,
+                                ownerName,
+                                playerShops
+                            )
+                        } else {
+                            createAndSendMenuBedrock(
+                                player,
+                                ownerName,
+                                playerShops
+                            )
                         }
-
-                        menu.sendTo(player)
                     }
                     return@launchAsyncThread
                 }
@@ -165,5 +158,85 @@ class LojaExecutor(m: DreamLoja) : LojaExecutorBase(m) {
         } else {
             m.openMenu(player)
         }
+    }
+
+    private fun createAndSendMenuJava(player: Player, ownerName: String, playerShops: List<Shop>) {
+        val menu = createMenu(
+            InventoryUtils.roundToNearestMultipleOfNine(playerShops.size).coerceAtLeast(9),
+            "§a§lLojas de $ownerName"
+        ) {
+            // Map it down to our inventory maps, split over to 9 first tho
+            playerShops.chunked(9)
+                .forEachIndexed { yIndex, shops ->
+                    val charMap = DreamLoja.INVENTORY_POSITIONS_MAPS[shops.size] ?: "XXXXXXXXX" // fallback
+
+                    var shopIndex = 0
+                    for ((xIndex, char) in charMap.withIndex()) {
+                        if (char == 'X') {
+                            val shop = shops.getOrNull(shopIndex++) ?: break // If there isn't enough shops, break out!
+                            slot(xIndex, yIndex) {
+                                item = shop.iconItemStack?.let { ItemUtils.deserializeItemFromBase64(it) } ?: ItemStack(Material.DIAMOND_BLOCK)
+                                    .rename("§a${shop.shopName}")
+
+                                onClick {
+                                    player.closeInventory()
+                                    Bukkit.dispatchCommand(
+                                        player,
+                                        "loja $ownerName ${shop.shopName}"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+
+        menu.sendTo(player)
+    }
+
+    private fun createAndSendMenuBedrock(player: Player, ownerName: String, playerShops: List<Shop>) {
+        val bedrockIntegrations = Bukkit.getPluginManager().getPlugin("DreamBedrockIntegrations") as DreamBedrockIntegrations
+
+        data class ShopButton(
+            val name: String,
+            val shopName: String
+        )
+
+        val buttons = playerShops.map {
+            // For some reason calling it.displayName() wraps the item name in [], that's why we access the item meta
+            val metaShopName = it.iconItemStack
+                ?.let { ItemUtils.deserializeItemFromBase64(it) }
+                ?.itemMeta
+                ?.displayName()
+                ?.let { LegacyComponentSerializer.legacySection().serialize(it) }
+
+            ShopButton(
+                metaShopName ?: it.shopName,
+                it.shopName
+            )
+        }
+
+        val formBuilder = SimpleForm
+            .builder()
+            .title("§a§lLojas de $ownerName")
+
+        for (button in buttons) {
+            formBuilder.button(button.name)
+        }
+
+        formBuilder.resultHandler { t, u ->
+            if (u is ValidFormResponseResult) {
+                val selected = buttons[u.response().clickedButtonId()]
+                Bukkit.dispatchCommand(
+                    player,
+                    "loja $ownerName ${selected.shopName}"
+                )
+            }
+        }
+
+        bedrockIntegrations.sendSimpleForm(
+            player,
+            formBuilder.build()
+        )
     }
 }

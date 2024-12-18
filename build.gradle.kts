@@ -37,6 +37,7 @@ allprojects {
         maven("https://maven.citizensnpcs.co/repo")
         maven("https://maven.fabricmc.net") // Required by paperweight userdev
         maven("https://repo.viaversion.com")
+        maven("https://repo.opencollab.dev/main/") // Required by Geyser's Cumulus
     }
 }
 
