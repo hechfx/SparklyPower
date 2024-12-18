@@ -131,6 +131,7 @@ class SparklyNeonVelocity @Inject constructor(
     override fun onEnable() {
         // onEnable is handled by SparklyVelocityCore, onEnable and onDisable are called on plugin load/unload/reload
         loadFavicons()
+        asnManager.load()
 
         if (config.socketPort != null) {
             val socketServer = SocketServer(this, server, config.socketPort)

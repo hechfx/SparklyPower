@@ -4,9 +4,12 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyPingEvent
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.ServerPing
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.sparklypower.common.utils.TextUtils
+import net.sparklypower.common.utils.adventure.TextComponent
 import net.sparklypower.common.utils.toLegacySection
 import net.sparklypower.sparklyneonvelocity.SparklyNeonVelocity
 import java.time.DayOfWeek
@@ -18,6 +21,27 @@ class PingListener(private val m: SparklyNeonVelocity, private val server: Proxy
     companion object {
         private val COLOR_LOGO_RED = TextColor.color(237, 46, 22)
         private val COLOR_LOGO_AQUA = TextColor.color(1, 235, 247)
+    }
+
+    // A simple MOTD because Bedrock SUCKS because you don't have ANY SPACE for your MOTD
+    // Heck, this MOTD does NOT HAVE ENOUGH SPACE
+    val bedrockMOTD = TextComponent {
+        // https://wiki.bedrock.dev/concepts/emojis.html
+        append(
+            TextComponent {
+                color(NamedTextColor.DARK_RED)
+                decorate(TextDecoration.BOLD)
+                content("Sparkly")
+            }
+        )
+
+        append(
+            TextComponent {
+                color(NamedTextColor.AQUA)
+                decorate(TextDecoration.BOLD)
+                content("Power")
+            }
+        )
     }
 
     @Subscribe
@@ -37,6 +61,13 @@ class PingListener(private val m: SparklyNeonVelocity, private val server: Proxy
             .onlinePlayers(online)
             .maximumPlayers(max)
 
+        if (m.isGeyser(event.connection)) {
+            builder.description(bedrockMOTD)
+
+            event.ping = builder.build()
+            return
+        }
+
         val top: String
         val bottom: String
 
@@ -53,7 +84,6 @@ class PingListener(private val m: SparklyNeonVelocity, private val server: Proxy
             builder.favicon(m.favicons["pantufa_point_allouette"])
 
             top = TextUtils.getCenteredMessage("§a\u266b §6(\uff89\u25d5\u30ee\u25d5)\uff89 §e* :\uff65\uff9f\u2727 ${COLOR_LOGO_RED.toLegacySection()}§lSparkly${COLOR_LOGO_AQUA.toLegacySection()}§lPower §e\u2727\uff9f\uff65: *§6\u30fd(\u25d5\u30ee\u25d5\u30fd) §a\u266b", 128)
-
 
             bottom = if (currentDayOfTheWeek == DayOfWeek.FRIDAY) {
                 TextUtils.getCenteredMessage(

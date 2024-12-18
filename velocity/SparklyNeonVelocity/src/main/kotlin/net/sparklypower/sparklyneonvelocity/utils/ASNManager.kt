@@ -53,6 +53,8 @@ class ASNManager(val m: SparklyNeonVelocity) {
                 idx++
             }
         }
+
+        m.logger.info { "${asns.size} ASNs loaded!"}
     }
 
     suspend fun isAsnBlacklisted(source: String): ASNBlockResult {
