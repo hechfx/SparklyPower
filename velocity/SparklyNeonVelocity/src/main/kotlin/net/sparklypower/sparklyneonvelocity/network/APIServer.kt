@@ -2,7 +2,6 @@ package net.sparklypower.sparklyneonvelocity.network
 
 import com.velocitypowered.api.proxy.ProxyServer
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.request.*
@@ -15,7 +14,7 @@ import net.sparklypower.sparklyneonvelocity.SparklyNeonVelocity
 
 class APIServer(private val plugin: SparklyNeonVelocity, private val velocityServer: ProxyServer) {
     private val logger = plugin.logger
-    private var server: ApplicationEngine? = null
+    private var server: EmbeddedServer<*, *>? = null
     val processors = Processors(plugin, velocityServer)
 
     fun start() {

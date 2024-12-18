@@ -60,8 +60,8 @@ dependencies {
 
     api("com.github.kevinsawicki:http-request:6.0")
 
-    api("io.ktor:ktor-client-cio:2.3.11")
-    api("io.ktor:ktor-server-netty:2.3.11")
+    api("io.ktor:ktor-client-cio:${Versions.KTOR}")
+    api("io.ktor:ktor-server-netty:${Versions.KTOR}")
 
     kapt("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
 }
