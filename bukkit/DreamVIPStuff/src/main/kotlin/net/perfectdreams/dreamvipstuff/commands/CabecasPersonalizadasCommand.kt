@@ -38,7 +38,7 @@ object CabecasPersonalizadasCommand : DSLCommandBase<DreamVIPStuff> {
             )
 
             val totalPrice = (PRICE * count)
-            if (totalPrice > player.balance) {
+            if (!player.hasPermission("dreamcabecas.bypassmoney") && totalPrice > player.balance) {
                 player.sendMessage("§cVocê precisa de 10k para cada cabeça que você deseja gerar!")
                 return@executes
             }
@@ -59,6 +59,10 @@ object CabecasPersonalizadasCommand : DSLCommandBase<DreamVIPStuff> {
 
                 player.sendMessage("§ePegando dados da sua cabeça... Não, não é mágica, é só eu pegando da URL, e não lendo a sua mente... deixa, essa piada é muito ruim.")
 
+                if (player.hasPermission("dreamcabecas.bypassmoney")) {
+                    player.sendMessage("§eVocê não irá pagar nada pelas cabeças pois você tem permissão para burlar a verificação de dinheiro!")
+
+                }
                 plugin.schedule(SynchronizationContext.ASYNC) {
                     val result = Jsoup.connect(url)
                         .execute()
@@ -70,7 +74,7 @@ object CabecasPersonalizadasCommand : DSLCommandBase<DreamVIPStuff> {
 
                     switchContext(SynchronizationContext.SYNC)
 
-                    if (totalPrice > player.balance) // Check again
+                    if (!player.hasPermission("dreamcabecas.bypassmoney") && totalPrice > player.balance) // Check again
                         return@schedule
 
                     player.sendMessage("§aCabeça criada com sucesso!")
