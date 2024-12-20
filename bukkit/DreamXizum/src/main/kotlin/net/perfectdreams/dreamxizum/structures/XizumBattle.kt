@@ -244,7 +244,7 @@ class XizumBattle(
                         loserDb.rating += if (loserDb.rating <= 0) 0 else loserPoints
 
                         winnerTotalPoints = winnerDb.rating
-                        loserTotalPoints = loserDb.rating
+                        loserTotalPoints = if (loserDb.rating <= 0) 0 else loserDb.rating
                     }
                 }
             }
