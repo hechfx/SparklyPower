@@ -13,7 +13,7 @@ import org.bukkit.ChatColor
 
 object EmoteListCommand : DSLCommandBase<DreamColorEmote> {
     override fun command(plugin: DreamColorEmote) = create(
-        listOf("emote", "emoji")
+        listOf("emoji")
     ) {
         executes {
             val page = args.getOrNull(0)?.toIntOrNull() ?: 0
