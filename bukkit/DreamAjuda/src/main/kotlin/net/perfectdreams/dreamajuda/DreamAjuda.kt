@@ -293,16 +293,17 @@ class DreamAjuda : KotlinPlugin(), Listener {
 		tutorialClazz: KClass<out SparklyTutorial>
 	): PlayerTutorial {
 		// We don't need to take care that we aren't hiding ourselves because the server already checks it for us
-		// We use hideEntity instead of hidePlayer because we don't want to remove the player from the TAB list
+		// We use hidePlayerWithoutRemovingFromPlayerList instead of hidePlayer because we don't want to remove the player from the TAB list
+		// (hideEntity has the same behavior as hidePlayer)
 		val revampedTutorialIslandWorld = Bukkit.getWorld("RevampedTutorialIsland")!!
 
 		revampedTutorialIslandWorld.players
 			.forEach {
 				// Hide all players on this world from that player
-				it.hideEntity(this@DreamAjuda, player)
+				it.hidePlayerWithoutRemovingFromPlayerList(this@DreamAjuda, player)
 
 				// And hide everyone to ourselves
-				player.hideEntity(this@DreamAjuda, it)
+				player.hidePlayerWithoutRemovingFromPlayerList(this@DreamAjuda, it)
 			}
 
 		val activeTutorial = activeTutorials[player]
@@ -324,8 +325,8 @@ class DreamAjuda : KotlinPlugin(), Listener {
 		revampedTutorialIslandWorld.players
 			.forEach {
 				// And now we revert the entity visibilities
-				it.showEntity(this@DreamAjuda, player)
-				player.showEntity(this@DreamAjuda, it)
+				it.showPlayerWithoutRemovingFromPlayerList(this@DreamAjuda, player)
+				player.showPlayerWithoutRemovingFromPlayerList(this@DreamAjuda, it)
 			}
 
 		val activeTutorial = activeTutorials[player]

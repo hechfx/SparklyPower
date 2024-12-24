@@ -23,12 +23,15 @@ import net.perfectdreams.dreamcore.utils.npc.SparklyNPCManager
 import net.perfectdreams.dreamcore.utils.npc.user.SparklyNPCCommand
 import net.perfectdreams.dreamcore.utils.npc.user.SparklyUserNPCManager
 import net.perfectdreams.dreamcore.utils.packetevents.PacketPipelineRegisterListener
+import net.perfectdreams.dreamcore.utils.players.PlayerVisibilityListener
+import net.perfectdreams.dreamcore.utils.players.PlayerVisibilityManager
 import net.perfectdreams.dreamcore.utils.scoreboards.SparklyScoreboardListener
 import net.perfectdreams.dreamcore.utils.scoreboards.SparklyScoreboardManager
 import net.perfectdreams.dreamcore.utils.skins.SkinUtils
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.Player
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -61,6 +64,7 @@ class DreamCore : KotlinPlugin() {
 	val skinUtils = SkinUtils(this)
 	val rpc = RPCUtils(this)
 	var sparkSnap: SparkSnap? = null
+	internal val playerVisibilityManagers = mutableMapOf<Player, PlayerVisibilityManager>()
 
 	override fun onEnable() {
 		saveDefaultConfig()
@@ -137,6 +141,7 @@ class DreamCore : KotlinPlugin() {
 
 		// SparklyPacketEvents
 		Bukkit.getPluginManager().registerEvents(PacketPipelineRegisterListener(this), this)
+		Bukkit.getPluginManager().registerEvents(PlayerVisibilityListener(this), this)
 
 		val scheduler = Bukkit.getScheduler()
 
@@ -187,5 +192,20 @@ class DreamCore : KotlinPlugin() {
 		sparklyUserNPCManager.save()
 		playerInventories.keys.forEach { it.restoreInventory() }
 		Databases.dataSource.close()
+	}
+
+	fun getPlayerVisibilityManager(player: Player): PlayerVisibilityManager? {
+		DreamUtils.assertMainThread(true)
+		return playerVisibilityManagers[player]
+	}
+
+	fun getOrCreatePlayerVisibilityManager(player: Player): PlayerVisibilityManager {
+		DreamUtils.assertMainThread(true)
+		return playerVisibilityManagers.getOrPut(player) { PlayerVisibilityManager(player) }
+	}
+
+	fun removePlayerVisibilityManager(player: Player) {
+		DreamUtils.assertMainThread(true)
+		playerVisibilityManagers.remove(player)
 	}
 }

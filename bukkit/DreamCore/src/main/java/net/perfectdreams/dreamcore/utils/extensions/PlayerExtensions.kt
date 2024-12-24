@@ -1,12 +1,5 @@
 package net.perfectdreams.dreamcore.utils.extensions
 
-import com.comphenix.protocol.PacketType
-import com.comphenix.protocol.ProtocolLibrary
-import com.comphenix.protocol.events.ListenerPriority
-import com.comphenix.protocol.events.PacketAdapter
-import com.comphenix.protocol.events.PacketEvent
-import com.comphenix.protocol.wrappers.EnumWrappers
-import com.okkero.skedule.schedule
 import me.ryanhamshire.GriefPrevention.Claim
 import me.ryanhamshire.GriefPrevention.ClaimPermission
 import net.minecraft.network.protocol.Packet
@@ -14,21 +7,14 @@ import net.perfectdreams.dreamcore.DreamCore
 import net.perfectdreams.dreamcore.utils.MeninaAPI
 import net.perfectdreams.dreamcore.utils.PlayerUtils
 import net.perfectdreams.dreamcore.utils.collections.mutablePlayerMapOf
-import net.perfectdreams.dreamcore.utils.collections.mutablePlayerSetOf
-import net.perfectdreams.dreamcore.utils.registerEvents
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.Player
-import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
-import org.bukkit.event.entity.ProjectileLaunchEvent
 import org.bukkit.event.player.*
 import org.bukkit.inventory.ItemStack
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
+import org.bukkit.plugin.Plugin
 import java.util.*
 
 fun Player.canBreakAt(location: Location, material: Material) = PlayerUtils.canBreakAt(location, this, material)
@@ -106,4 +92,28 @@ fun Player.hasAnyPermissionAtClaim(claim: Claim, staffBypass: Boolean) =
  */
 fun Player.sendPacket(packet: Packet<*>) {
     (this as CraftPlayer).handle.connection.send(packet)
+}
+
+
+/**
+ * Hides a player from this player without removing them from the player list
+ *
+ * @param plugin Plugin that wants to hide the player
+ * @param player Player to hide
+ */
+fun Player.hidePlayerWithoutRemovingFromPlayerList(plugin: Plugin, otherPlayer: Player) {
+    DreamCore.INSTANCE.getOrCreatePlayerVisibilityManager(this).hidePlayer(plugin, otherPlayer)
+}
+
+
+/**
+ * Allows this player to see a player that was previously hidden. If
+ * another plugin had hidden the player too, then the player will
+ * remain hidden until the other plugin calls this method too.
+ *
+ * @param plugin Plugin that wants to show the player
+ * @param player Player to show
+ */
+fun Player.showPlayerWithoutRemovingFromPlayerList(plugin: Plugin, otherPlayer: Player) {
+    DreamCore.INSTANCE.getOrCreatePlayerVisibilityManager(this).showPlayer(plugin, otherPlayer)
 }
