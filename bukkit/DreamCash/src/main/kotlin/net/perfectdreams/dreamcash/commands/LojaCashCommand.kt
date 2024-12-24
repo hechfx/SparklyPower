@@ -63,7 +63,8 @@ class LojaCashCommand(val m: DreamCash) : SparklyCommand(arrayOf("lojacash", "ca
                 customModelData: Int? = null,
                 name: String,
                 groupName: String,
-                quantity: Long
+                quantity: Long,
+                hasThisVip: Boolean
             ) {
                 slot(x, y) {
                     item = ItemStack(type)
@@ -76,7 +77,7 @@ class LojaCashCommand(val m: DreamCash) : SparklyCommand(arrayOf("lojacash", "ca
                         }
 
                     onClick {
-                        if (hasAnyVip && !isVip) {
+                        if (hasAnyVip && !hasThisVip) {
                             sender.sendMessage("§cVocê não pode alterar o seu VIP atual enquanto você já tem outro VIP ativo!")
                             return@onClick
                         }
@@ -412,9 +413,9 @@ class LojaCashCommand(val m: DreamCash) : SparklyCommand(arrayOf("lojacash", "ca
             }
 
             // Accumulate means "add more time", this is to avoid issues when giving the VIP group ;)
-            generateVIPItemAt(0, 0, Material.IRON_INGOT, 1, "§b§lVIP", "vip", 500)
-            generateVIPItemAt(1, 0, Material.GOLD_INGOT, 1, "§b§lVIP§e+", "vip+", 1_000)
-            generateVIPItemAt(2, 0, Material.DIAMOND, 1, "§b§lVIP§e++", "vip++", 1_800)
+            generateVIPItemAt(0, 0, Material.IRON_INGOT, 1, "§b§lVIP", "vip", 500, isVip)
+            generateVIPItemAt(1, 0, Material.GOLD_INGOT, 1, "§b§lVIP§e+", "vip+", 1_000, isVipPlus)
+            generateVIPItemAt(2, 0, Material.DIAMOND, 1, "§b§lVIP§e++", "vip++", 1_800, isVipPlusPlus)
 
             /* generateItemAt(1, 0, Material.GOLD_INGOT, 1, "§b§lVIP§e+", 1_000) {
                 if (hasAnyVip && !isVipPlus) {
