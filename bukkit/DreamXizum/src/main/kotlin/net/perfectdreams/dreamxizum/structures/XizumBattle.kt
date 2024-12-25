@@ -198,7 +198,9 @@ class XizumBattle(
             it.remove()
         }
 
-        BattleListener.enderPearlCooldown.clear()
+        listOf(player, opponent).forEach {
+            BattleListener.enderPearlCooldown.remove(it.uniqueId)
+        }
 
         m.launchAsyncThread {
             var winnerPoints = 0
