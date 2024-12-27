@@ -43,10 +43,11 @@ class UpdatePantufaDiscordActivityTask(val m: PantufaBot, val jda: JDA) : Runnab
 					logger.info { "SparklyPower Player Count: $proxyPlayerCount" }
 
 					val oldPreviousPlayers = this.previousPlayers
+					val oldPreviousPlayersUniqueIds = oldPreviousPlayers?.map { it.uniqueId }
 
 					val currentPlayers = players
-					if (oldPreviousPlayers != null) {
-						val joinedPlayers = currentPlayers.toMutableList().also { it.removeAll(oldPreviousPlayers) }
+					if (oldPreviousPlayersUniqueIds != null) {
+						val joinedPlayers = currentPlayers.filter { it.uniqueId !in oldPreviousPlayersUniqueIds }
 						logger.info { "Newly joined players: $joinedPlayers" }
 
 						val currentPlayersUniqueId = currentPlayers.map { it.uniqueId }
@@ -92,7 +93,7 @@ class UpdatePantufaDiscordActivityTask(val m: PantufaBot, val jda: JDA) : Runnab
 									it.sendMessageEmbeds(
 										EmbedBuilder()
 											.setTitle("<a:lori_pat:706263175892566097> Seu amigx está online no SparklyPower!")
-											.setDescription("Seu amigx `${joinedPlayer}` acabou de entrar no SparklyPower! Que tal entrar para fazer companhia para elx?")
+											.setDescription("Seu amigx `${joinedPlayer.name}` acabou de entrar no SparklyPower! Que tal entrar para fazer companhia para elx?")
 											.setColor(Constants.LORITTA_AQUA)
 											.setThumbnail("https://sparklypower.net/api/v1/render/avatar?name=${joinedPlayer.name}&scale=16")
 											.setTimestamp(Instant.now())
