@@ -19,6 +19,7 @@ import net.sparklypower.rpc.proxy.ProxyGetProxyOnlinePlayersRequest
 import net.sparklypower.rpc.proxy.ProxyGetProxyOnlinePlayersResponse
 import net.sparklypower.rpc.proxy.ProxyRPCResponse
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 import java.util.*
@@ -50,10 +51,10 @@ class UpdatePantufaDiscordActivityTask(val m: PantufaBot, val jda: JDA) : Runnab
 
 						val currentPlayersUniqueId = currentPlayers.map { it.uniqueId }
 						for (joinedPlayer in joinedPlayers) {
-							val uniqueId = UUID.nameUUIDFromBytes("OfflinePlayer:$joinedPlayer".toByteArray())
+							val uniqueId = joinedPlayer.uniqueId
 
 							val trackedEntries = transaction(Databases.sparklyPower) {
-								NotifyPlayersOnline.select { NotifyPlayersOnline.tracked eq uniqueId }
+								NotifyPlayersOnline.selectAll().where { NotifyPlayersOnline.tracked eq uniqueId }
 									.toList()
 							}
 
