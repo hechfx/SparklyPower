@@ -94,7 +94,7 @@ class UpdatePantufaDiscordActivityTask(val m: PantufaBot, val jda: JDA) : Runnab
 											.setTitle("<a:lori_pat:706263175892566097> Seu amigx está online no SparklyPower!")
 											.setDescription("Seu amigx `${joinedPlayer}` acabou de entrar no SparklyPower! Que tal entrar para fazer companhia para elx?")
 											.setColor(Constants.LORITTA_AQUA)
-											.setThumbnail("https://sparklypower.net/api/v1/render/avatar?name=${joinedPlayer}&scale=16")
+											.setThumbnail("https://sparklypower.net/api/v1/render/avatar?name=${joinedPlayer.name}&scale=16")
 											.setTimestamp(Instant.now())
 											.build()
 									).queue()
