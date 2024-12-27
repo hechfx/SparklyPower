@@ -423,9 +423,12 @@ class LSXCommand : SlashCommandDeclarationWrapper {
                 }.toList()
             }
 
+            val bypassTransferPermission = userPerms.firstOrNull { it[LuckPermsUserPermissions.permission] == "group.dono" || it[LuckPermsUserPermissions.permission] == "group.admin" || it[LuckPermsUserPermissions.permission] == "group.moderador" }
             val vipPlusPlusPermission = userPerms.firstOrNull { it[LuckPermsUserPermissions.permission] == "group.vip++" }
 
-            return if (vipPlusPlusPermission != null) {
+            return if (bypassTransferPermission != null) {
+                0
+            } else if (vipPlusPlusPermission != null) {
                 12
             } else {
                 24
