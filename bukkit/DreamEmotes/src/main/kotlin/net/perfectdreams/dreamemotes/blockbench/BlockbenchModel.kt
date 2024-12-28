@@ -27,7 +27,8 @@ data class BlockbenchModel(
         val from: List<Double>,
         val to: List<Double>,
         val origin: List<Double>,
-        val uuid: @Serializable(with = UUIDAsStringSerializer::class) UUID
+        val uuid: @Serializable(with = UUIDAsStringSerializer::class) UUID,
+        val visibility: Boolean = true
     )
 
     @Serializable

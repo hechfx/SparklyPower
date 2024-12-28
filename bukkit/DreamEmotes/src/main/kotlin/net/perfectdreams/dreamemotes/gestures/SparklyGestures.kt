@@ -1,6 +1,7 @@
 package net.perfectdreams.dreamemotes.gestures
 
 import net.perfectdreams.dreamemotes.blockbench.BlockbenchModel
+import org.bukkit.entity.Player
 
 class SparklyGestures(val blockbenchModel: BlockbenchModel) {
     val animations = mutableMapOf<String, SparklyGesture>()
@@ -18,7 +19,8 @@ class SparklyGestures(val blockbenchModel: BlockbenchModel) {
                             1.7f
                         )
                     )
-                )
+                ),
+                { _, _ -> }
             )
         )
     )
@@ -36,7 +38,8 @@ class SparklyGestures(val blockbenchModel: BlockbenchModel) {
                             1f
                         )
                     )
-                )
+                ),
+                { _, _ -> }
             )
         )
     )
@@ -44,7 +47,7 @@ class SparklyGestures(val blockbenchModel: BlockbenchModel) {
     val tpose = create(
         "tpose",
         listOf(
-            GestureAction.PlayAndHold(getAnimationByName("tpose"), mapOf())
+            GestureAction.PlayAndHold(getAnimationByName("tpose"), mapOf(),   { _, _ -> })
         )
     )
 
@@ -61,7 +64,8 @@ class SparklyGestures(val blockbenchModel: BlockbenchModel) {
                             1f
                         )
                     )
-                )
+                ),
+                { _, _ -> }
             )
         )
     )
@@ -84,20 +88,24 @@ class SparklyGestures(val blockbenchModel: BlockbenchModel) {
 
     sealed class GestureAction {
         abstract val sidecarKeyframes: Map<Int, List<PlaySound>>
+        abstract val onKeyframe: (Int, Player) -> (Unit)
 
         class Play(
             val animation: BlockbenchModel.Animation,
-            override val sidecarKeyframes: Map<Int, List<PlaySound>>
+            override val sidecarKeyframes: Map<Int, List<PlaySound>>,
+            override val onKeyframe: (Int, Player) -> (Unit)
         ) : GestureAction()
 
         class PlayAndHold(
             val animation: BlockbenchModel.Animation,
-            override val sidecarKeyframes: Map<Int, List<PlaySound>>
+            override val sidecarKeyframes: Map<Int, List<PlaySound>>,
+            override val onKeyframe: (Int, Player) -> (Unit)
         ) : GestureAction()
 
         class PlayAndLoop(
             val animation: BlockbenchModel.Animation,
-            override val sidecarKeyframes: Map<Int, List<PlaySound>>
+            override val sidecarKeyframes: Map<Int, List<PlaySound>>,
+            override val onKeyframe: (Int, Player) -> (Unit)
         ) : GestureAction()
     }
 

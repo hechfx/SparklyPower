@@ -74,6 +74,7 @@ class GestureCommand(val m: DreamEmotes) : SparklyCommandDeclarationWrapper {
                                 player,
                                 currentPlayerLocation,
                                 gestureSkinHeads,
+                                m.sparklyGestures.blockbenchModel,
                                 animation
                             )
                         } else {
@@ -114,6 +115,7 @@ class GestureCommand(val m: DreamEmotes) : SparklyCommandDeclarationWrapper {
                                                 player,
                                                 currentPlayerLocation,
                                                 gestureSkinHeads,
+                                                m.sparklyGestures.blockbenchModel,
                                                 gesture.value
                                             )
                                         } else {

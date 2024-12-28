@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.profile.PlayerTextures
 import org.joml.Matrix4f
+import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.*
 import kotlin.math.abs
@@ -39,6 +40,11 @@ class PlayerGesturePlayback(
     val cameraEntity: Entity,
     val entityToBeMountedNetworkId: Int,
 ) {
+    companion object {
+        const val TARGET_PLAYBACK_SPEED_TICKS = 1L
+        const val INTERPOLATION_DURATION_TICKS = (TARGET_PLAYBACK_SPEED_TICKS + 1).toInt()
+    }
+
     var ticksLived = 0
     var relativeTicksCurrentGestureLived = 0
     val elementIdToEntities = mutableMapOf<UUID, Display>()
@@ -74,25 +80,19 @@ class PlayerGesturePlayback(
 
         fun processOutliner(
             outline: BlockbenchModel.Outliner,
-
-            // TODO: This is a bit wonky, it DOES work, but we also need to support other rotations, offsets, and other stuff like scale
-            parentRotX: Double,
-            parentRotY: Double,
-            parentRotZ: Double,
-
+            parentMatrix4f: Matrix4f,
             parentOffsetX: Double,
             parentOffsetY: Double,
-            parentOffsetZ: Double
+            parentOffsetZ: Double,
         ) {
             // If rotations are wrong, check if the "pivot" in the animation is in the right place!
             // (Yes, there is the outliner pivot AND a animation-specific pivot)
-
             /* if (outline.name == "head_with_nameplate" || outline.name == "head") {
                 Bukkit.broadcastMessage("${outline.name}: parentOffsetY is ${parentOffsetY}")
                 Bukkit.broadcastMessage("${outline.name}: Stuff: $parentRotY")
             } */
             // Bukkit.broadcastMessage("Processing outline ${outline.name} - ${outline.children}")
-            val matrix4f = Matrix4f()
+            val matrix4f = Matrix4f(parentMatrix4f) // Matrix4f(parentMatrix4f)
 
             var outlineOriginX = outline.origin[0]
             var outlineOriginY = outline.origin[1]
@@ -234,28 +234,25 @@ class PlayerGesturePlayback(
                 }
             }
 
+            // Bukkit.broadcastMessage("${outline.name} offsetY: $offsetY")
             outlineOriginX += offsetX
             outlineOriginY += offsetY
             outlineOriginZ += offsetZ
 
+            // Bukkit.broadcastMessage("${outline.name} Origin X: $outlineOriginX")
+            // Bukkit.broadcastMessage("${outline.name} Origin Y: $outlineOriginY")
+            // Bukkit.broadcastMessage("${outline.name} Origin Z: $outlineOriginZ")
+
+            // Bukkit.broadcastMessage("${outline.name} Outline Rot X: $outlineRotationX")
+            // Bukkit.broadcastMessage("${outline.name} Outline Rot Y: $outlineRotationY")
+            // Bukkit.broadcastMessage("${outline.name} Outline Rot Z: $outlineRotationZ")
+
+            // Bukkit.broadcastMessage("Rotating ${outline.name} by $outlineRotationX, $outlineRotationY, $outlineRotationZ, pivot is at ${outlineOriginX}, ${outlineOriginY}, ${outlineOriginZ}")
             val outlineRotationXRad = Math.toRadians(outlineRotationX)
             val outlineRotationYRad = Math.toRadians(outlineRotationY)
             val outlineRotationZRad = Math.toRadians(outlineRotationZ)
 
-            // YES THIS WORKS
-
-            // Think like this...
-            // This sets the target scale of this matrix4f ("scene")
-            matrix4f.scale(TARGET_SCALE)
-
-            // player.sendMessage("${outline.name}: outlineOriginX: $outlineOriginX; outlineOriginY: $outlineOriginY; outlineOriginZ: $outlineOriginZ")
-            // player.sendMessage("${outline.name}: outlineRotationXRad: $outlineRotationXRad; outlineRotationYRad: $outlineRotationYRad; outlineRotationZRad: $outlineRotationZRad")
-
-            // matrix4f.rotateZ(Math.toRadians(parentRotZ).toFloat())
-            matrix4f.rotateY(Math.toRadians(targetYaw.toDouble() + parentRotY).toFloat())
-            // matrix4f.rotateX(Math.toRadians(parentRotX).toFloat())
-
-            // Then we translate to the origin (pivot point)
+            // And translate it back to the world origin
             matrix4f.translate(outlineOriginX.toFloat(), outlineOriginY.toFloat(), outlineOriginZ.toFloat())
 
             // YES THIS IS THE ROTATION ORDER (Z -> Y -> X) BLOCKBENCH USES (I DON'T KNOW HOW)
@@ -264,19 +261,11 @@ class PlayerGesturePlayback(
             // I DON'T KNOW WHY THE ROTATION ORDER MATTERS
             //
             // The reason it matters (probably?) is that the rotation order impacts the rotation, so you need to match what rotation your 3D editor uses
+            matrix4f.rotateZ(outlineRotationZRad.toFloat()) // Rotate around Z-axis
+            matrix4f.rotateY(outlineRotationYRad.toFloat()) // Rotate around Y-axis
+            matrix4f.rotateX(outlineRotationXRad.toFloat()) // Rotate around X-axis
 
-            // Yes, parent x/z rotations are done in the pivot... no, I don't know why we need to do it like this
-            matrix4f
-                .rotateZ(outlineRotationZRad.toFloat() + Math.toRadians(parentRotZ).toFloat()) // Rotate around Z-axis
-                .rotateY(outlineRotationYRad.toFloat()) // Rotate around Y-axis
-                .rotateX(outlineRotationXRad.toFloat() + Math.toRadians(parentRotX).toFloat()) // Rotate around X-axis
-
-            // And translate it back to the world origin
-            matrix4f.translate(
-                -outlineOriginX.toFloat(),
-                -outlineOriginY.toFloat(),
-                -outlineOriginZ.toFloat()
-            )
+            matrix4f.translate(-outlineOriginX.toFloat(), -outlineOriginY.toFloat(), -outlineOriginZ.toFloat())
 
             val childrenUniqueIds = outline.children.filterIsInstance<BlockbenchModel.ChildrenOutliner.ElementReference>().map { it.uuid }
             val elements = blockbenchModel.elements.filter { it.uuid in childrenUniqueIds }
@@ -286,6 +275,9 @@ class PlayerGesturePlayback(
                 //
                 // Don't render arms that are not for us
                 if ((element.name.startsWith("arm_left_") || element.name.startsWith("arm_right_")) && !element.name.endsWith(skinModel.name.lowercase()))
+                    continue
+
+                if (!element.visibility)
                     continue
 
                 val topX = element.from[0]
@@ -323,29 +315,23 @@ class PlayerGesturePlayback(
                     localOffsetY -= 5.6
                 }
 
-                // Yes we INTENTIONALLY use bottomY
-                val transformedPos = Vector3f((centerX + offsetX + localOffsetX).toFloat(), (bottomY + offsetY + localOffsetY).toFloat(), (centerZ + offsetZ + localOffsetZ).toFloat())
-                matrix4f.transformPosition(transformedPos)
+                // Bukkit.broadcastMessage("${element.name} offsets: $offsetX; $offsetY; $offsetZ")
+                // Bukkit.broadcastMessage("${element.name} centers: $centerX; $centerY ($bottomY); $centerZ")
 
-                val sourceLocation = location.clone().add(
-                    transformedPos.x.toDouble(),
-                    transformedPos.y.toDouble(),
-                    transformedPos.z.toDouble()
-                )
-
+                // We don't need to manipulate the coordinates, display entities' translations are not capped! So we only need to translate on the transformation itself
+                val sourceLocation = location.clone()
                 val existingEntity = elementIdToEntities[element.uuid]
 
-                val itemScaleX = (scaleX.toFloat() * 2f) * TARGET_SCALE
-                val itemScaleY = (scaleY.toFloat() * 2f) * TARGET_SCALE
-                val itemScaleZ = (scaleZ.toFloat() * 2f) * TARGET_SCALE
+                val itemScaleX = (scaleX.toFloat() * 2f)
+                val itemScaleY = (scaleY.toFloat() * 2f)
+                val itemScaleZ = (scaleZ.toFloat() * 2f)
 
-                val displayTransformationMatrix = Matrix4f()
-                    .rotateZ(outlineRotationZRad.toFloat()) // Rotate around Z-axis
-                    .rotateY(outlineRotationYRad.toFloat()) // Rotate around Y-axis
-                    .rotateX(outlineRotationXRad.toFloat()) // Rotate around X-axis
-                    .rotateZ(Math.toRadians(parentRotZ).toFloat())
-                    .rotateLocalY(Math.toRadians(targetYaw.toDouble() + parentRotY).toFloat()) // This rotates "globally"
-                    .rotateX(Math.toRadians(parentRotX).toFloat())
+                val displayTransformationMatrix = Matrix4f(matrix4f)
+                    .translate(
+                        (centerX + offsetX).toFloat(),
+                        (bottomY + localOffsetY + offsetY).toFloat(),
+                        (centerZ + offsetZ).toFloat()
+                    )
                     .apply {
                         if (element.name == "hat") {
                             rotateY(Math.toRadians(180.0).toFloat())
@@ -354,26 +340,56 @@ class PlayerGesturePlayback(
                     .scale(
                         itemScaleX,
                         itemScaleY,
-                        itemScaleZ
+                        itemScaleZ,
                     )
 
                 val currentTransform = elementIdToMatrix4f[element.uuid]
                 elementIdToMatrix4f[element.uuid] = displayTransformationMatrix
 
                 if (existingEntity != null) {
-                    existingEntity.teleport(sourceLocation)
-                    if (element.name != "nameplate") {
+                    // existingEntity.teleport(sourceLocation)
+                    if (element.name == "nameplate") {
+                        // We DO NOT want rotation, because that causes the nameplate to rotate based on its origin
+                        val transformedPos = Vector3f((centerX + offsetX).toFloat(), (centerY + offsetY).toFloat(), (centerZ + offsetZ).toFloat())
+                        matrix4f.transformPosition(transformedPos)
+
+                        val nameplateLocation = location.clone()
+                            .add(
+                                transformedPos.x.toDouble(),
+                                transformedPos.y.toDouble(),
+                                transformedPos.z.toDouble()
+                            )
+
+                        existingEntity.teleport(nameplateLocation)
+                    } else {
                         if (currentTransform == displayTransformationMatrix) {
                             // Fixes jittery elements that had a dynamic transformation set but doesn't have them anymore
                             existingEntity.interpolationDelay = 0
                             existingEntity.interpolationDuration = 0
                         } else {
                             existingEntity.interpolationDelay = -1
+                            existingEntity.interpolationDuration = INTERPOLATION_DURATION_TICKS
                             existingEntity.setTransformationMatrix(displayTransformationMatrix)
                         }
                     }
                 } else {
                     val entity = if (element.name == "nameplate") {
+                        // For nameplates, we do a special case due to the way text displays work
+                        // We DO NOT want rotation, because that causes the nameplate to rotate based on its origin
+                        // val elementMatrix4f = Matrix4f(matrix4f)
+                        val transformedPos = Vector3f((centerX + offsetX).toFloat(), (centerY + offsetY).toFloat(), (centerZ + offsetZ).toFloat())
+                        matrix4f.transformPosition(transformedPos)
+
+                        // Bukkit.broadcastMessage("${element.name}: coordinates: ${transformedPos.x}; ${transformedPos.y}; ${transformedPos.z}")
+
+                        // We don't need to manipulate the coordinates, display entities' translations are not capped! So we only need to translate on the transformation itself
+                        val nameplateLocation = location.clone()
+                            .add(
+                                transformedPos.x.toDouble(),
+                                transformedPos.y.toDouble(),
+                                transformedPos.z.toDouble()
+                            )
+
                         // Special handling for the nameplate
                         var nameplateName = player.name()
                         // Try getting the prefix and suffix of the player in the PhoenixScoreboard, to make it look even fancier
@@ -396,11 +412,12 @@ class PlayerGesturePlayback(
 
                         location.world.spawn(
                             // We INTENTIONALLY use topY instead of centerY, because Minecraft scales based on the item's TOP LOCATION, not the CENTER
-                            sourceLocation, // location.clone().add(centerX, bottomY, centerZ),
+                            nameplateLocation, // location.clone().add(centerX, bottomY, centerZ),
                             TextDisplay::class.java
                         ) {
                             it.text(nameplateName)
                             it.billboard = Display.Billboard.CENTER
+
                             it.teleportDuration = 1
                             it.isPersistent = false
                         }
@@ -415,7 +432,8 @@ class PlayerGesturePlayback(
                             it.interpolationDelay = -1
                             // We do 2 interpolation duration because 1 feels like it doesn't interpolate anything at all
                             // We should always keep this (delay between frames) + 1
-                            it.interpolationDuration = 2
+
+                            it.interpolationDuration = INTERPOLATION_DURATION_TICKS
                             it.teleportDuration = 1
                             it.isPersistent = false
 
@@ -496,9 +514,7 @@ class PlayerGesturePlayback(
             for (childrenOutliner in outline.children.filterIsInstance<BlockbenchModel.ChildrenOutliner.NestedOutliner>().filter { it.outliner.visibility }) {
                 processOutliner(
                     childrenOutliner.outliner,
-                    outlineRotationX + parentRotX,
-                    outlineRotationY + parentRotY,
-                    outlineRotationZ + parentRotZ,
+                    matrix4f,
                     offsetX,
                     offsetY,
                     offsetZ
@@ -507,7 +523,8 @@ class PlayerGesturePlayback(
         }
 
         for (outline in blockbenchModel.outliner.filter { it.visibility }) {
-            processOutliner(outline, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+            // The scale sets the "target scale" of the scene
+            processOutliner(outline, Matrix4f().scale(TARGET_SCALE), 0.0, 0.0, 0.0)
         }
 
         val additionalKeyframes = currentAction.sidecarKeyframes[relativeTicksCurrentGestureLived]
@@ -517,6 +534,8 @@ class PlayerGesturePlayback(
                 location.world.playSound(location, keyframe.soundKey, keyframe.volume, keyframe.pitch)
             }
         }
+
+        currentAction.onKeyframe.invoke(ticksLived, player)
 
         if (animationDurationInTicks == relativeTicksCurrentGestureLived) {
             when (currentAction) {

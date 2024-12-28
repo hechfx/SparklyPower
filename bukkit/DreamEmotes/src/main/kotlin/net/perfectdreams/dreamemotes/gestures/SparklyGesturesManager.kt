@@ -34,6 +34,7 @@ import net.perfectdreams.dreamcore.utils.scheduler.delayTicks
 import net.perfectdreams.dreamemotes.DreamEmotes
 import net.perfectdreams.dreamemotes.OrbitalCamera
 import net.perfectdreams.dreamemotes.StatueBase
+import net.perfectdreams.dreamemotes.blockbench.BlockbenchModel
 import net.perfectdreams.dreamemotes.commands.GestureCommand.MineSkinRatelimitHeaders
 import net.perfectdreams.dreamemotes.tables.CachedGestureSkinHeads
 import org.bukkit.Bukkit
@@ -419,6 +420,7 @@ class SparklyGesturesManager(val m: DreamEmotes) {
         player: Player,
         targetLocation: Location,
         gestureSkinHeads: GestureSkinHeads,
+        blockbenchModel: BlockbenchModel,
         animation: SparklyGestures.SparklyGesture
     ) {
         stopGesturePlayback(player)
@@ -500,7 +502,7 @@ class SparklyGesturesManager(val m: DreamEmotes) {
         val playerGesturePlayback = PlayerGesturePlayback(
             m,
             player,
-            m.sparklyGestures.blockbenchModel,
+            blockbenchModel,
             animation,
             gestureSkinHeads,
             player.playerProfile.textures.skinModel,

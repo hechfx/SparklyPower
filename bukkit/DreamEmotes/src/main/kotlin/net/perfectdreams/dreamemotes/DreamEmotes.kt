@@ -55,6 +55,7 @@ class DreamEmotes : KotlinPlugin(), Listener {
 		}
 
 		registerCommand(GestureCommand(this))
+		registerCommand(TestGestureCommand(this))
 		// registerCommand(OrbitalCommand(this))
 
 		registerEvents(this)
@@ -67,7 +68,7 @@ class DreamEmotes : KotlinPlugin(), Listener {
 					gesture.ticksLived++
 				}
 
-				delayTicks(1L)
+				delayTicks(PlayerGesturePlayback.TARGET_PLAYBACK_SPEED_TICKS)
 			}
 		}
 	}
