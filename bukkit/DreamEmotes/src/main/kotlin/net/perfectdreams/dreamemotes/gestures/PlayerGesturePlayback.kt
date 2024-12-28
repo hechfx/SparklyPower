@@ -524,7 +524,7 @@ class PlayerGesturePlayback(
 
         for (outline in blockbenchModel.outliner.filter { it.visibility }) {
             // The scale sets the "target scale" of the scene
-            processOutliner(outline, Matrix4f().scale(TARGET_SCALE), 0.0, 0.0, 0.0)
+            processOutliner(outline, Matrix4f().scale(TARGET_SCALE).rotateY(Math.toRadians(targetYaw.toDouble()).toFloat()), 0.0, 0.0, 0.0)
         }
 
         val additionalKeyframes = currentAction.sidecarKeyframes[relativeTicksCurrentGestureLived]
