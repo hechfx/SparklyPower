@@ -69,6 +69,7 @@ class UnleashedCommandManager(val m: PantufaBot) {
         // ===[ Moderation ]===
         register(AdminConsoleBungeeCommand())
         register(CommandsLogCommand())
+        register(AllCommandsCommand())
         register(SayCommand())
 
         // ===[ Utils ]===
